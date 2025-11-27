@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Générateur de Rapports Professionnels</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --secondary: #0f766e;
+      --accent: #dc2626;
+      --success: #16a34a;
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --border: #e2e8f0;
+      --muted: #64748b;
+    }
+
+    body {
+      font-family: 'Segoe UI', Trebuchet MS, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-content {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .lang-toggle {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .lang-toggle button {
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .lang-toggle button.active {
+      background: white;
+      color: var(--primary);
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1200px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .panel-header {
+      padding: 1.5rem;
+      border-bottom: 2px solid var(--border);
+      background: var(--bg);
+    }
+
+    .panel-header h2 {
+      font-size: 1.25rem;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .panel-header p {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .panel-content {
+      padding: 1.5rem;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .editor-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .editor-section h3 {
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    input[type="text"],
+    input[type="file"],
+    textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      font-family: inherit;
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #0d9488;
+    }
+
+    .btn-small {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .content-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .content-item.image {
+      background: #f1f5f9;
+    }
+
+    .content-item img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 0.375rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .content-item-caption {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .content-item-text {
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: var(--accent);
+      color: white;
+      padding: 0.35rem 0.75rem;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .remove-btn:hover {
+      background: #b91c1c;
+    }
+
+    /* Report Preview Styles */
+    .report-preview {
+      background: white;
+      padding: 3rem;
+      font-size: 11pt;
+      line-height: 1.8;
+      color: #1f2937;
+    }
+
+    .report-header {
+      text-align: center;
+      border-bottom: 3px solid var(--primary);
+      padding-bottom: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .report-title {
+      font-size: 28pt;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .report-subtitle {
+      font-size: 14pt;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .report-date {
+      font-size: 10pt;
+      color: #94a3b8;
+    }
+
+    .report-toc {
+      page-break-after: always;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .report-toc h3 {
+      font-size: 16pt;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .toc-item {
+      font-size: 11pt;
+      margin-bottom: 0.5rem;
+      padding-left: 1rem;
+    }
+
+    .report-section {
+      margin-bottom: 2rem;
+    }
+
+    .report-section h2 {
+      font-size: 16pt;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--primary);
+      padding-left: 0.75rem;
+    }
+
+    .report-section h3 {
+      font-size: 13pt;
+      font-weight: 600;
+      color: var(--secondary);
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .report-paragraph {
+      font-size: 11pt;
+      line-height: 1.8;
+      margin-bottom: 1rem;
+      text-align: justify;
+      color: #374151;
+    }
+
+    .report-figure {
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+
+    .report-figure img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 0.75rem;
+    }
+
+    .figure-caption {
+      font-size: 10pt;
+      color: var(--muted);
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .export-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    .export-buttons button {
+      flex: 1;
+      padding: 1rem;
+      font-size: 1rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      header, .editor-panel, .export-buttons {
+        display: none;
+      }
+    }
+
+    @page {
+      size: A4;
+      margin: 2cm;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="logo">
+        <span>📄</span>
+        <span id="app-title">Générateur de Rapports Pro</span>
+      </div>
+      <div class="lang-toggle">
+        <button class="active" id="lang-fr" onclick="setLang('fr')">FR</button>
+        <button id="lang-en" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Editor Panel -->
+    <div class="panel editor-panel">
+      <div class="panel-header">
+        <h2 id="editor-title">Créer votre Rapport</h2>
+        <p id="editor-desc">Ajoutez du contenu, images et organisez votre rapport</p>
+      </div>
+      <div class="panel-content">
+        <!-- Rapport Info -->
+        <div class="editor-section">
+          <h3 id="info-label">Informations du Rapport</h3>
+          <input type="text" id="report-title" placeholder="Titre du rapport..." value="Mon Rapport Professionnel">
+          <input type="text" id="report-subject" placeholder="Sujet/Thème...">
+          <input type="text" id="report-author" placeholder="Auteur...">
+        </div>
+
+        <!-- Add Content -->
+        <div class="editor-section">
+          <h3 id="content-label">Ajouter du Contenu</h3>
+          <label id="text-label">Texte/Paragraphe:</label>
+          <textarea id="paragraph-input" placeholder="Écrivez votre texte ici..."></textarea>
+          <button class="btn-primary btn-small" onclick="addParagraph()" id="add-text-btn">+ Ajouter Texte</button>
+
+          <label id="image-label" style="margin-top: 1.5rem;">Image:</label>
+          <input type="file" id="image-input" accept="image/*">
+          <input type="text" id="image-caption" placeholder="Caption/titre de l'image (optionnel)">
+          <button class="btn-primary btn-small" onclick="addImage()" id="add-image-btn">+ Ajouter Image</button>
+        </div>
+
+        <!-- Content List -->
+        <div class="editor-section">
+          <h3 id="content-list-label">Contenu Ajouté</h3>
+          <div id="content-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 id="preview-title">Aperçu du Rapport</h2>
+        <p id="preview-desc">Visualisez votre rapport professionnel</p>
+      </div>
+      <div class="panel-content" style="padding: 0; height: 70vh; overflow-y: auto;">
+        <div class="report-preview" id="report-preview">
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <p id="empty-text">Commencez à ajouter du contenu...</p>
+          </div>
+        </div>
+      </div>
+      <div class="export-buttons">
+        <button class="btn-primary" onclick="exportPDF()" id="export-pdf-btn">📥 Exporter PDF</button>
+        <button class="btn-secondary" onclick="exportWord()" id="export-word-btn">📥 Exporter Word</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const translations = {
+      fr: {
+        'app-title': 'Générateur de Rapports Pro',
+        'editor-title': 'Créer votre Rapport',
+        'editor-desc': 'Ajoutez du contenu, images et organisez votre rapport',
+        'info-label': 'Informations du Rapport',
+        'content-label': 'Ajouter du Contenu',
+        'text-label': 'Texte/Paragraphe:',
+        'image-label': 'Image:',
+        'add-text-btn': '+ Ajouter Texte',
+        'add-image-btn': '+ Ajouter Image',
+        'content-list-label': 'Contenu Ajouté',
+        'preview-title': 'Aperçu du Rapport',
+        'preview-desc': 'Visualisez votre rapport professionnel',
+        'export-pdf-btn': '📥 Exporter PDF',
+        'export-word-btn': '📥 Exporter Word',
+        'empty-text': 'Commencez à ajouter du contenu...',
+      },
+      en: {
+        'app-title': 'Professional Report Generator',
+        'editor-title': 'Create Your Report',
+        'editor-desc': 'Add content, images and organize your report',
+        'info-label': 'Report Information',
+        'content-label': 'Add Content',
+        'text-label': 'Text/Paragraph:',
+        'image-label': 'Image:',
+        'add-text-btn': '+ Add Text',
+        'add-image-btn': '+ Add Image',
+        'content-list-label': 'Added Content',
+        'preview-title': 'Report Preview',
+        'preview-desc': 'Visualize your professional report',
+        'export-pdf-btn': '📥 Export PDF',
+        'export-word-btn': '📥 Export Word',
+        'empty-text': 'Start adding content...',
+      }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'fr';
+    let contents = [];
+    let figureCount = 0;
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('lang', lang);
+      document.getElementById('lang-fr').classList.toggle('active', lang === 'fr');
+      document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+      updateTranslations();
+    }
+
+    function updateTranslations() {
+      Object.entries(translations[currentLang]).forEach(([key, value]) => {
+        const el = document.getElementById(key);
+        if (el) el.textContent = value;
+      });
+    }
+
+    function addParagraph() {
+      const text = document.getElementById('paragraph-input').value.trim();
+      if (!text) return;
+
+      contents.push({
+        type: 'paragraph',
+        text: text
+      });
+
+      document.getElementById('paragraph-input').value = '';
+      renderContent();
+      renderPreview();
+    }
+
+    function addImage() {
+      const file = document.getElementById('image-input').files[0];
+      const caption = document.getElementById('image-caption').value.trim();
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        figureCount++;
+        contents.push({
+          type: 'image',
+          src: e.target.result,
+          caption: caption || `Figure ${figureCount}`
+        });
+
+        document.getElementById('image-input').value = '';
+        document.getElementById('image-caption').value = '';
+        renderContent();
+        renderPreview();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeContent(idx) {
+      contents.splice(idx, 1);
+      renderContent();
+      renderPreview();
+    }
+
+    function renderContent() {
+      const list = document.getElementById('content-list');
+      if (contents.length === 0) {
+        list.innerHTML = '<div class="empty-state"><p>' + translations[currentLang]['empty-text'] + '</p></div>';
+        return;
+      }
+
+      list.innerHTML = contents.map((item, idx) => {
+        if (item.type === 'paragraph') {
+          return `
+            <div class="content-item">
+              <button class="remove-btn" onclick="removeContent(${idx})">✕</button>
+              <div class="content-item-text">${item.text.substring(0, 100)}...</div>
+            </div>
+          `;
+        } else if (item.type === 'image') {
+          return `
+            <div class="content-item image">
+              <button class="remove-btn" onclick="removeContent(${idx})">✕</button>
+              <img src="${item.src}" style="max-height: 150px; width: auto;">
+              <div class="content-item-caption">${item.caption}</div>
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    function renderPreview() {
+      const title = document.getElementById('report-title').value || 'Mon Rapport';
+      const subject = document.getElementById('report-subject').value;
+      const author = document.getElementById('report-author').value;
+      const date = new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US');
+
+      if (contents.length === 0) {
+        document.getElementById('report-preview').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <p>${translations[currentLang]['empty-text']}</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <div class="report-header">
+          <div class="report-title">${title}</div>
+          ${subject ? `<div class="report-subtitle">${subject}</div>` : ''}
+          <div class="report-date">${author ? author + ' • ' : ''}${date}</div>
+        </div>
+      `;
+
+      // Table of Contents
+      const headings = contents.filter(c => c.type === 'paragraph').map((c, i) => ({
+        text: c.text.split('\n')[0].substring(0, 50),
+        idx: i
+      }));
+
+      if (headings.length > 0) {
+        html += `
+          <div class="report-toc">
+            <h3>${currentLang === 'fr' ? 'Table des matières' : 'Table of Contents'}</h3>
+            ${headings.map((h, i) => `<div class="toc-item">${i + 1}. ${h.text}</div>`).join('')}
+          </div>
+        `;
+      }
+
+      // Content
+      contents.forEach((item) => {
+        if (item.type === 'paragraph') {
+          const paragraphs = item.text.split('\n').filter(p => p.trim());
+          html += `<div class="report-section">`;
+          paragraphs.forEach((para, idx) => {
+            if (idx === 0) {
+              html += `<h2>${para}</h2>`;
+            } else {
+              html += `<p class="report-paragraph">${para}</p>`;
+            }
+          });
+          html += `</div>`;
+        } else if (item.type === 'image') {
+          html += `
+            <div class="report-figure">
+              <img src="${item.src}" style="max-width: 80%; height: auto;">
+              <div class="figure-caption">${item.caption}</div>
+            </div>
+          `;
+        }
+      });
+
+      document.getElementById('report-preview').innerHTML = html;
+    }
+
+    function exportPDF() {
+      const element = document.getElementById('report-preview');
+      const opt = {
+        margin: 10,
+        filename: (document.getElementById('report-title').value || 'rapport') + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function exportWord() {
+      const title = document.getElementById('report-title').value || 'Mon Rapport';
+      const subject = document.getElementById('report-subject').value || '';
+      const author = document.getElementById('report-author').value || '';
+
+      const sections = [];
+      contents.forEach((item) => {
+        if (item.type === 'paragraph') {
+          const paragraphs = item.text.split('\n').filter(p => p.trim());
+          paragraphs.forEach((para, idx) => {
+            sections.push(
+              new docx.Paragraph({
+                text: para,
+                heading: idx === 0 ? docx.HeadingLevel.HEADING_1 : undefined,
+                spacing: { line: 360, lineRule: docx.LineRuleType.AUTO }
+              })
+            );
+          });
+        }
+      });
+
+      const doc = new docx.Document({
+        sections: [{
+          properties: {},
+          children: [
+            new docx.Paragraph({ text: title, heading: docx.HeadingLevel.HEADING_1, spacing: { after: 200 } }),
+            new docx.Paragraph({ text: subject, spacing: { after: 100 } }),
+            new docx.Paragraph({ text: author || '', spacing: { after: 400 } }),
+            ...sections
+          ]
+        }]
+      });
+
+      docx.Packer.toBlob(doc).then(blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = (title || 'rapport') + '.docx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+
+    // Initialize
+    updateTranslations();
+    renderContent();
+    renderPreview();
+  </script>
+</body>
+</html>
