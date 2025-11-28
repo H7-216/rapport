@@ -1,728 +1,735 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Générateur de Rapports Professionnels</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Rapports Pro</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- docx.js -->
+    <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
+    <!-- FileSaver.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Marked for Markdown parsing (optional but good for AI text) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    :root {
-      --primary: #1e3a8a;
-      --primary-light: #3b82f6;
-      --secondary: #0f766e;
-      --accent: #dc2626;
-      --success: #16a34a;
-      --bg: #f8fafc;
-      --text: #0f172a;
-      --border: #e2e8f0;
-      --muted: #64748b;
-    }
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
-    body {
-      font-family: 'Segoe UI', Trebuchet MS, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        h1, h2, h3, h4, h5, h6, .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        /* A4 Paper Simulation */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+        }
 
-    header {
-      background: linear-gradient(135deg, var(--primary), var(--primary-light));
-      color: white;
-      padding: 2rem 1.5rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
+        /* Print Styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #report-preview-container, #report-preview-container * {
+                visibility: visible;
+            }
+            #report-preview-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .a4-page {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+            }
+        }
 
-    .header-content {
-      max-width: 1600px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
 
-    .logo {
-      font-size: 1.5rem;
-      font-weight: 700;
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .lang-toggle {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .lang-toggle button {
-      padding: 0.5rem 1rem;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      border-radius: 0.375rem;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-
-    .lang-toggle button.active {
-      background: white;
-      color: var(--primary);
-    }
-
-    .container {
-      max-width: 1600px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-    }
-
-    @media (max-width: 1200px) {
-      .container {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .panel {
-      background: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .panel-header {
-      padding: 1.5rem;
-      border-bottom: 2px solid var(--border);
-      background: var(--bg);
-    }
-
-    .panel-header h2 {
-      font-size: 1.25rem;
-      color: var(--primary);
-      margin-bottom: 0.25rem;
-    }
-
-    .panel-header p {
-      font-size: 0.875rem;
-      color: var(--muted);
-    }
-
-    .panel-content {
-      padding: 1.5rem;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-
-    .editor-section {
-      margin-bottom: 1.5rem;
-    }
-
-    .editor-section h3 {
-      font-size: 1rem;
-      margin-bottom: 0.75rem;
-      color: var(--primary);
-      font-weight: 600;
-    }
-
-    label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: var(--text);
-    }
-
-    input[type="text"],
-    input[type="file"],
-    textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 0.375rem;
-      font-family: inherit;
-      font-size: 1rem;
-      margin-bottom: 0.75rem;
-    }
-
-    input[type="text"]:focus,
-    textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-    }
-
-    button {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 0.375rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.95rem;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-light);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
-    }
-
-    .btn-secondary {
-      background: var(--secondary);
-      color: white;
-    }
-
-    .btn-secondary:hover {
-      background: #0d9488;
-    }
-
-    .btn-small {
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
-    }
-
-    .content-item {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 0.375rem;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      position: relative;
-    }
-
-    .content-item.image {
-      background: #f1f5f9;
-    }
-
-    .content-item img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 0.375rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .content-item-caption {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 0.5rem;
-    }
-
-    .content-item-text {
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    .remove-btn {
-      position: absolute;
-      top: 0.75rem;
-      right: 0.75rem;
-      background: var(--accent);
-      color: white;
-      padding: 0.35rem 0.75rem;
-      border: none;
-      border-radius: 0.25rem;
-      cursor: pointer;
-      font-size: 0.8rem;
-    }
-
-    .remove-btn:hover {
-      background: #b91c1c;
-    }
-
-    /* Report Preview Styles */
-    .report-preview {
-      background: white;
-      padding: 3rem;
-      font-size: 11pt;
-      line-height: 1.8;
-      color: #1f2937;
-    }
-
-    .report-header {
-      text-align: center;
-      border-bottom: 3px solid var(--primary);
-      padding-bottom: 2rem;
-      margin-bottom: 3rem;
-    }
-
-    .report-title {
-      font-size: 28pt;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 0.75rem;
-    }
-
-    .report-subtitle {
-      font-size: 14pt;
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
-
-    .report-date {
-      font-size: 10pt;
-      color: #94a3b8;
-    }
-
-    .report-toc {
-      page-break-after: always;
-      margin-bottom: 2rem;
-      padding-bottom: 2rem;
-      border-bottom: 2px solid var(--border);
-    }
-
-    .report-toc h3 {
-      font-size: 16pt;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 1rem;
-    }
-
-    .toc-item {
-      font-size: 11pt;
-      margin-bottom: 0.5rem;
-      padding-left: 1rem;
-    }
-
-    .report-section {
-      margin-bottom: 2rem;
-    }
-
-    .report-section h2 {
-      font-size: 16pt;
-      font-weight: 700;
-      color: var(--primary);
-      margin-top: 2rem;
-      margin-bottom: 1rem;
-      border-left: 4px solid var(--primary);
-      padding-left: 0.75rem;
-    }
-
-    .report-section h3 {
-      font-size: 13pt;
-      font-weight: 600;
-      color: var(--secondary);
-      margin-top: 1.5rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .report-paragraph {
-      font-size: 11pt;
-      line-height: 1.8;
-      margin-bottom: 1rem;
-      text-align: justify;
-      color: #374151;
-    }
-
-    .report-figure {
-      margin: 1.5rem 0;
-      text-align: center;
-    }
-
-    .report-figure img {
-      max-width: 100%;
-      height: auto;
-      border: 1px solid var(--border);
-      border-radius: 0.375rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      margin-bottom: 0.75rem;
-    }
-
-    .figure-caption {
-      font-size: 10pt;
-      color: var(--muted);
-      font-weight: 600;
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-
-    .export-buttons {
-      display: flex;
-      gap: 1rem;
-      margin-top: 2rem;
-      border-top: 1px solid var(--border);
-      padding-top: 1.5rem;
-    }
-
-    .export-buttons button {
-      flex: 1;
-      padding: 1rem;
-      font-size: 1rem;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 2rem;
-      color: var(--muted);
-    }
-
-    .empty-state-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    @media print {
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      header, .editor-panel, .export-buttons {
-        display: none;
-      }
-    }
-
-    @page {
-      size: A4;
-      margin: 2cm;
-    }
-  </style>
+        .hidden-section {
+            display: none;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af', // blue-800
+                        secondary: '#f1f5f9', // slate-100
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-  <header>
-    <div class="header-content">
-      <div class="logo">
-        <span>📄</span>
-        <span id="app-title">Générateur de Rapports Pro</span>
-      </div>
-      <div class="lang-toggle">
-        <button class="active" id="lang-fr" onclick="setLang('fr')">FR</button>
-        <button id="lang-en" onclick="setLang('en')">EN</button>
-      </div>
-    </div>
-  </header>
+<body class="h-screen flex overflow-hidden text-slate-800">
 
-  <div class="container">
-    <!-- Editor Panel -->
-    <div class="panel editor-panel">
-      <div class="panel-header">
-        <h2 id="editor-title">Créer votre Rapport</h2>
-        <p id="editor-desc">Ajoutez du contenu, images et organisez votre rapport</p>
-      </div>
-      <div class="panel-content">
-        <!-- Rapport Info -->
-        <div class="editor-section">
-          <h3 id="info-label">Informations du Rapport</h3>
-          <input type="text" id="report-title" placeholder="Titre du rapport..." value="Mon Rapport Professionnel">
-          <input type="text" id="report-subject" placeholder="Sujet/Thème...">
-          <input type="text" id="report-author" placeholder="Auteur...">
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-slate-900 text-white h-full flex flex-col flex-shrink-0 shadow-xl z-10">
+        <div class="p-6 border-b border-slate-800">
+            <h1 class="text-xl font-serif font-bold flex items-center gap-2">
+                <i data-lucide="file-text" class="text-blue-400"></i> Rapport Pro
+            </h1>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="showPage('editor')" id="nav-editor" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-blue-700 text-white">
+                <i data-lucide="edit-3" size="20"></i>
+                <span class="font-medium">Éditeur</span>
+            </button>
+            <button onclick="showPage('chati')" id="nav-chati" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-slate-400 hover:bg-slate-800 hover:text-white">
+                <i data-lucide="message-square" size="20"></i>
+                <span class="font-medium">Chati Chati (IA)</span>
+            </button>
+            <button onclick="showPage('history')" id="nav-history" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-slate-400 hover:bg-slate-800 hover:text-white">
+                <i data-lucide="history" size="20"></i>
+                <span class="font-medium">Historique</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+            Version Standalone • Local
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex h-full overflow-hidden relative">
+        
+        <!-- PAGE: EDITOR -->
+        <div id="page-editor" class="flex-1 flex w-full h-full">
+            <!-- Editor Inputs (Left) -->
+            <div class="w-full md:w-1/2 h-full overflow-y-auto p-6 bg-slate-50 border-r border-slate-200">
+                <div class="max-w-2xl mx-auto space-y-8 pb-20">
+                    
+                    <!-- Metadata -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                        <h2 class="text-lg font-bold text-blue-900 flex items-center gap-2">
+                            <i data-lucide="info"></i> Informations
+                        </h2>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Titre du Rapport</label>
+                                <input type="text" id="input-title" oninput="updateReport('title', this.value)" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-serif font-bold" placeholder="Titre...">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Sujet / Sous-titre</label>
+                                    <input type="text" id="input-subject" oninput="updateReport('subject', this.value)" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Sujet...">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Auteur</label>
+                                    <input type="text" id="input-author" oninput="updateReport('author', this.value)" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nom...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sections List -->
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-slate-700">Contenu</h3>
+                            <div class="flex gap-2">
+                                <button onclick="addSection('heading')" class="px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 text-sm font-medium flex items-center gap-1">
+                                    <i data-lucide="heading" class="w-4 h-4"></i> Titre
+                                </button>
+                                <button onclick="addSection('paragraph')" class="px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 text-sm font-medium flex items-center gap-1">
+                                    <i data-lucide="align-left" class="w-4 h-4"></i> Texte
+                                </button>
+                                <button onclick="addSection('image')" class="px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 text-sm font-medium flex items-center gap-1">
+                                    <i data-lucide="image" class="w-4 h-4"></i> Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="sections-container" class="space-y-4">
+                            <!-- Sections will be injected here by JS -->
+                            <div class="text-center py-10 border-2 border-dashed border-slate-300 rounded-lg text-slate-400">
+                                Aucun contenu. Ajoutez une section ou utilisez Chati Chati.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating Actions Bar -->
+                <div class="fixed bottom-6 left-6 md:left-[calc(256px+24px)] right-6 md:right-[calc(50%+24px)] bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg border border-slate-200 flex justify-between items-center z-20">
+                    <button onclick="saveReportToHistory()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-lg transition-transform active:scale-95">
+                        <i data-lucide="save" class="w-4 h-4"></i> Sauvegarder
+                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="generatePDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-lg transition-transform active:scale-95">
+                            <i data-lucide="file-down" class="w-4 h-4"></i> PDF
+                        </button>
+                        <button onclick="generateWord()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-lg transition-transform active:scale-95">
+                            <i data-lucide="file-text" class="w-4 h-4"></i> Word
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview (Right) -->
+            <div class="hidden md:flex w-1/2 h-full bg-slate-200 p-8 overflow-y-auto justify-center items-start">
+                <div id="report-preview-container" class="a4-page text-slate-900 transform origin-top scale-[0.85] xl:scale-100 transition-transform">
+                    <!-- Preview content injected here -->
+                </div>
+            </div>
         </div>
 
-        <!-- Add Content -->
-        <div class="editor-section">
-          <h3 id="content-label">Ajouter du Contenu</h3>
-          <label id="text-label">Texte/Paragraphe:</label>
-          <textarea id="paragraph-input" placeholder="Écrivez votre texte ici..."></textarea>
-          <button class="btn-primary btn-small" onclick="addParagraph()" id="add-text-btn">+ Ajouter Texte</button>
+        <!-- PAGE: CHATI CHATI -->
+        <div id="page-chati" class="hidden-section w-full h-full overflow-y-auto bg-slate-50 p-6 md:p-12">
+            <div class="max-w-3xl mx-auto space-y-8">
+                <div class="text-center space-y-4">
+                    <h1 class="text-4xl font-serif font-bold text-blue-900">Chati Chati 🤖</h1>
+                    <p class="text-lg text-slate-600">
+                        Votre assistant IA pour rédiger des rapports professionnels en quelques secondes.
+                    </p>
+                </div>
 
-          <label id="image-label" style="margin-top: 1.5rem;">Image:</label>
-          <input type="file" id="image-input" accept="image/*">
-          <input type="text" id="image-caption" placeholder="Caption/titre de l'image (optionnel)">
-          <button class="btn-primary btn-small" onclick="addImage()" id="add-image-btn">+ Ajouter Image</button>
+                <!-- API Key Section -->
+                <div id="api-key-section" class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="key" class="text-yellow-500"></i> Configuration Clé OpenAI
+                    </h3>
+                    <div class="flex gap-4">
+                        <input type="password" id="openai-key" class="flex-1 p-3 border border-slate-300 rounded-lg" placeholder="sk-...">
+                        <button onclick="saveApiKey()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700">
+                            Enregistrer
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Votre clé est stockée localement dans votre navigateur. Elle n'est jamais partagée.</p>
+                </div>
+
+                <!-- Chat Interface -->
+                <div id="chat-interface" class="hidden bg-white p-6 rounded-xl shadow-lg border border-blue-100 space-y-6">
+                    <div class="space-y-2">
+                        <label class="font-bold text-slate-700">Sujet du Rapport</label>
+                        <input type="text" id="ai-topic" class="w-full p-4 text-lg border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ex: L'impact de l'IA sur l'emploi...">
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="font-bold text-slate-700">Instructions Spécifiques</label>
+                        <textarea id="ai-instructions" class="w-full p-4 h-32 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ex: Fais un plan en 3 parties, inclus une conclusion optimiste..."></textarea>
+                    </div>
+
+                    <button onclick="generateWithAI()" id="btn-generate" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold text-lg shadow-lg hover:scale-[1.01] transition-transform flex justify-center items-center gap-2">
+                        <i data-lucide="wand-2"></i> Générer le Rapport
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- Content List -->
-        <div class="editor-section">
-          <h3 id="content-list-label">Contenu Ajouté</h3>
-          <div id="content-list"></div>
+        <!-- PAGE: HISTORY -->
+        <div id="page-history" class="hidden-section w-full h-full overflow-y-auto bg-slate-50 p-6 md:p-12">
+            <div class="max-w-5xl mx-auto space-y-8">
+                <h1 class="text-3xl font-serif font-bold text-blue-900">Historique des Rapports</h1>
+                
+                <div id="history-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- History items injected here -->
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Preview Panel -->
-    <div class="panel">
-      <div class="panel-header">
-        <h2 id="preview-title">Aperçu du Rapport</h2>
-        <p id="preview-desc">Visualisez votre rapport professionnel</p>
-      </div>
-      <div class="panel-content" style="padding: 0; height: 70vh; overflow-y: auto;">
-        <div class="report-preview" id="report-preview">
-          <div class="empty-state">
-            <div class="empty-state-icon">📋</div>
-            <p id="empty-text">Commencez à ajouter du contenu...</p>
-          </div>
-        </div>
-      </div>
-      <div class="export-buttons">
-        <button class="btn-primary" onclick="exportPDF()" id="export-pdf-btn">📥 Exporter PDF</button>
-        <button class="btn-secondary" onclick="exportWord()" id="export-word-btn">📥 Exporter Word</button>
-      </div>
-    </div>
-  </div>
+    </main>
 
-  <script>
-    const translations = {
-      fr: {
-        'app-title': 'Générateur de Rapports Pro',
-        'editor-title': 'Créer votre Rapport',
-        'editor-desc': 'Ajoutez du contenu, images et organisez votre rapport',
-        'info-label': 'Informations du Rapport',
-        'content-label': 'Ajouter du Contenu',
-        'text-label': 'Texte/Paragraphe:',
-        'image-label': 'Image:',
-        'add-text-btn': '+ Ajouter Texte',
-        'add-image-btn': '+ Ajouter Image',
-        'content-list-label': 'Contenu Ajouté',
-        'preview-title': 'Aperçu du Rapport',
-        'preview-desc': 'Visualisez votre rapport professionnel',
-        'export-pdf-btn': '📥 Exporter PDF',
-        'export-word-btn': '📥 Exporter Word',
-        'empty-text': 'Commencez à ajouter du contenu...',
-      },
-      en: {
-        'app-title': 'Professional Report Generator',
-        'editor-title': 'Create Your Report',
-        'editor-desc': 'Add content, images and organize your report',
-        'info-label': 'Report Information',
-        'content-label': 'Add Content',
-        'text-label': 'Text/Paragraph:',
-        'image-label': 'Image:',
-        'add-text-btn': '+ Add Text',
-        'add-image-btn': '+ Add Image',
-        'content-list-label': 'Added Content',
-        'preview-title': 'Report Preview',
-        'preview-desc': 'Visualize your professional report',
-        'export-pdf-btn': '📥 Export PDF',
-        'export-word-btn': '📥 Export Word',
-        'empty-text': 'Start adding content...',
-      }
-    };
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- STATE MANAGEMENT ---
+        const state = {
+            report: {
+                id: crypto.randomUUID(),
+                title: "Nouveau Rapport",
+                subject: "",
+                author: "",
+                date: new Date().toISOString(),
+                sections: []
+            },
+            apiKey: localStorage.getItem('openai_api_key') || '',
+            history: JSON.parse(localStorage.getItem('saved_reports') || '[]')
+        };
 
-    let currentLang = localStorage.getItem('lang') || 'fr';
-    let contents = [];
-    let figureCount = 0;
-
-    function setLang(lang) {
-      currentLang = lang;
-      localStorage.setItem('lang', lang);
-      document.getElementById('lang-fr').classList.toggle('active', lang === 'fr');
-      document.getElementById('lang-en').classList.toggle('active', lang === 'en');
-      updateTranslations();
-    }
-
-    function updateTranslations() {
-      Object.entries(translations[currentLang]).forEach(([key, value]) => {
-        const el = document.getElementById(key);
-        if (el) el.textContent = value;
-      });
-    }
-
-    function addParagraph() {
-      const text = document.getElementById('paragraph-input').value.trim();
-      if (!text) return;
-
-      contents.push({
-        type: 'paragraph',
-        text: text
-      });
-
-      document.getElementById('paragraph-input').value = '';
-      renderContent();
-      renderPreview();
-    }
-
-    function addImage() {
-      const file = document.getElementById('image-input').files[0];
-      const caption = document.getElementById('image-caption').value.trim();
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        figureCount++;
-        contents.push({
-          type: 'image',
-          src: e.target.result,
-          caption: caption || `Figure ${figureCount}`
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderEditor();
+            renderPreview();
+            checkApiKey();
+            renderHistory();
         });
 
-        document.getElementById('image-input').value = '';
-        document.getElementById('image-caption').value = '';
-        renderContent();
-        renderPreview();
-      };
-      reader.readAsDataURL(file);
-    }
+        // --- NAVIGATION ---
+        function showPage(pageId) {
+            // Hide all pages
+            ['editor', 'chati', 'history'].forEach(p => {
+                document.getElementById(`page-${p}`).classList.add('hidden-section');
+                document.getElementById(`nav-${p}`).classList.remove('bg-blue-700', 'text-white');
+                document.getElementById(`nav-${p}`).classList.add('text-slate-400');
+            });
 
-    function removeContent(idx) {
-      contents.splice(idx, 1);
-      renderContent();
-      renderPreview();
-    }
+            // Show selected
+            document.getElementById(`page-${pageId}`).classList.remove('hidden-section');
+            // Update Nav
+            const navBtn = document.getElementById(`nav-${pageId}`);
+            navBtn.classList.remove('text-slate-400', 'hover:bg-slate-800');
+            navBtn.classList.add('bg-blue-700', 'text-white');
 
-    function renderContent() {
-      const list = document.getElementById('content-list');
-      if (contents.length === 0) {
-        list.innerHTML = '<div class="empty-state"><p>' + translations[currentLang]['empty-text'] + '</p></div>';
-        return;
-      }
-
-      list.innerHTML = contents.map((item, idx) => {
-        if (item.type === 'paragraph') {
-          return `
-            <div class="content-item">
-              <button class="remove-btn" onclick="removeContent(${idx})">✕</button>
-              <div class="content-item-text">${item.text.substring(0, 100)}...</div>
-            </div>
-          `;
-        } else if (item.type === 'image') {
-          return `
-            <div class="content-item image">
-              <button class="remove-btn" onclick="removeContent(${idx})">✕</button>
-              <img src="${item.src}" style="max-height: 150px; width: auto;">
-              <div class="content-item-caption">${item.caption}</div>
-            </div>
-          `;
+            // Specific page logic
+            if (pageId === 'page-history') renderHistory();
         }
-      }).join('');
-    }
 
-    function renderPreview() {
-      const title = document.getElementById('report-title').value || 'Mon Rapport';
-      const subject = document.getElementById('report-subject').value;
-      const author = document.getElementById('report-author').value;
-      const date = new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US');
+        // --- EDITOR LOGIC ---
+        function updateReport(field, value) {
+            state.report[field] = value;
+            renderPreview();
+        }
 
-      if (contents.length === 0) {
-        document.getElementById('report-preview').innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">📋</div>
-            <p>${translations[currentLang]['empty-text']}</p>
-          </div>
-        `;
-        return;
-      }
+        function addSection(type) {
+            state.report.sections.push({
+                id: crypto.randomUUID(),
+                type: type,
+                title: type === 'heading' ? 'Nouvelle Section' : '',
+                content: type === 'paragraph' ? '' : '',
+                imageUrl: '',
+                imageCaption: ''
+            });
+            renderEditor();
+            renderPreview();
+        }
 
-      let html = `
-        <div class="report-header">
-          <div class="report-title">${title}</div>
-          ${subject ? `<div class="report-subtitle">${subject}</div>` : ''}
-          <div class="report-date">${author ? author + ' • ' : ''}${date}</div>
-        </div>
-      `;
-
-      // Table of Contents
-      const headings = contents.filter(c => c.type === 'paragraph').map((c, i) => ({
-        text: c.text.split('\n')[0].substring(0, 50),
-        idx: i
-      }));
-
-      if (headings.length > 0) {
-        html += `
-          <div class="report-toc">
-            <h3>${currentLang === 'fr' ? 'Table des matières' : 'Table of Contents'}</h3>
-            ${headings.map((h, i) => `<div class="toc-item">${i + 1}. ${h.text}</div>`).join('')}
-          </div>
-        `;
-      }
-
-      // Content
-      contents.forEach((item) => {
-        if (item.type === 'paragraph') {
-          const paragraphs = item.text.split('\n').filter(p => p.trim());
-          html += `<div class="report-section">`;
-          paragraphs.forEach((para, idx) => {
-            if (idx === 0) {
-              html += `<h2>${para}</h2>`;
-            } else {
-              html += `<p class="report-paragraph">${para}</p>`;
+        function updateSection(id, field, value) {
+            const section = state.report.sections.find(s => s.id === id);
+            if (section) {
+                section[field] = value;
+                renderPreview(); // Real-time preview
             }
-          });
-          html += `</div>`;
-        } else if (item.type === 'image') {
-          html += `
-            <div class="report-figure">
-              <img src="${item.src}" style="max-width: 80%; height: auto;">
-              <div class="figure-caption">${item.caption}</div>
-            </div>
-          `;
         }
-      });
 
-      document.getElementById('report-preview').innerHTML = html;
-    }
-
-    function exportPDF() {
-      const element = document.getElementById('report-preview');
-      const opt = {
-        margin: 10,
-        filename: (document.getElementById('report-title').value || 'rapport') + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
-    }
-
-    function exportWord() {
-      const title = document.getElementById('report-title').value || 'Mon Rapport';
-      const subject = document.getElementById('report-subject').value || '';
-      const author = document.getElementById('report-author').value || '';
-
-      const sections = [];
-      contents.forEach((item) => {
-        if (item.type === 'paragraph') {
-          const paragraphs = item.text.split('\n').filter(p => p.trim());
-          paragraphs.forEach((para, idx) => {
-            sections.push(
-              new docx.Paragraph({
-                text: para,
-                heading: idx === 0 ? docx.HeadingLevel.HEADING_1 : undefined,
-                spacing: { line: 360, lineRule: docx.LineRuleType.AUTO }
-              })
-            );
-          });
+        function removeSection(id) {
+            state.report.sections = state.report.sections.filter(s => s.id !== id);
+            renderEditor();
+            renderPreview();
         }
-      });
 
-      const doc = new docx.Document({
-        sections: [{
-          properties: {},
-          children: [
-            new docx.Paragraph({ text: title, heading: docx.HeadingLevel.HEADING_1, spacing: { after: 200 } }),
-            new docx.Paragraph({ text: subject, spacing: { after: 100 } }),
-            new docx.Paragraph({ text: author || '', spacing: { after: 400 } }),
-            ...sections
-          ]
-        }]
-      });
+        function moveSection(index, direction) {
+            const newSections = [...state.report.sections];
+            if (index + direction < 0 || index + direction >= newSections.length) return;
+            [newSections[index], newSections[index + direction]] = [newSections[index + direction], newSections[index]];
+            state.report.sections = newSections;
+            renderEditor();
+            renderPreview();
+        }
 
-      docx.Packer.toBlob(doc).then(blob => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = (title || 'rapport') + '.docx';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      });
-    }
+        function handleImageUpload(file, sectionId) {
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    updateSection(sectionId, 'imageUrl', reader.result);
+                    // Also update the preview for the input thumbnail
+                    const imgPreview = document.getElementById(`img-preview-${sectionId}`);
+                    if(imgPreview) imgPreview.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 
-    // Initialize
-    updateTranslations();
-    renderContent();
-    renderPreview();
-  </script>
+        // --- RENDERING ---
+        function renderEditor() {
+            // Inputs
+            document.getElementById('input-title').value = state.report.title;
+            document.getElementById('input-subject').value = state.report.subject || '';
+            document.getElementById('input-author').value = state.report.author || '';
+
+            // Sections
+            const container = document.getElementById('sections-container');
+            container.innerHTML = '';
+
+            if (state.report.sections.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 border-2 border-dashed border-slate-300 rounded-lg text-slate-400">Aucun contenu.</div>`;
+                return;
+            }
+
+            state.report.sections.forEach((section, index) => {
+                const div = document.createElement('div');
+                div.className = "bg-white p-4 rounded-lg border border-slate-200 shadow-sm relative group hover:border-blue-400 transition-colors";
+                
+                let contentHtml = '';
+                
+                // Controls
+                const controls = `
+                    <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="moveSection(${index}, -1)" class="p-1 hover:bg-slate-100 rounded text-slate-600"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                        <button onclick="moveSection(${index}, 1)" class="p-1 hover:bg-slate-100 rounded text-slate-600"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                        <button onclick="removeSection('${section.id}')" class="p-1 hover:bg-red-100 rounded text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                `;
+
+                if (section.type === 'heading') {
+                    contentHtml = `
+                        <label class="block text-xs font-bold text-blue-600 uppercase mb-1">Titre de section</label>
+                        <input type="text" value="${section.title}" oninput="updateSection('${section.id}', 'title', this.value)" class="w-full p-2 font-bold text-lg border-b border-slate-200 focus:border-blue-500 outline-none">
+                    `;
+                } else if (section.type === 'paragraph') {
+                    contentHtml = `
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Paragraphe</label>
+                        <textarea oninput="updateSection('${section.id}', 'content', this.value)" class="w-full p-2 min-h-[100px] border border-slate-200 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm leading-relaxed">${section.content || ''}</textarea>
+                    `;
+                } else if (section.type === 'image') {
+                    contentHtml = `
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Image</label>
+                        <div class="flex gap-4 items-start">
+                            <div class="w-24 h-24 bg-slate-100 rounded border flex items-center justify-center overflow-hidden flex-shrink-0">
+                                ${section.imageUrl ? `<img id="img-preview-${section.id}" src="${section.imageUrl}" class="w-full h-full object-cover">` : `<i data-lucide="image" class="text-slate-300"></i>`}
+                            </div>
+                            <div class="flex-1 space-y-2">
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this.files[0], '${section.id}')" class="text-sm block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                <input type="text" value="${section.imageCaption || ''}" oninput="updateSection('${section.id}', 'imageCaption', this.value)" placeholder="Légende..." class="w-full p-2 text-sm border border-slate-200 rounded">
+                            </div>
+                        </div>
+                    `;
+                }
+
+                div.innerHTML = controls + contentHtml;
+                container.appendChild(div);
+            });
+            
+            // Re-init icons for new elements
+            lucide.createIcons();
+        }
+
+        function renderPreview() {
+            const container = document.getElementById('report-preview-container');
+            const r = state.report;
+            const dateFormatted = new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // Generate Table of Contents
+            const headings = r.sections.filter(s => s.type === 'heading');
+            let tocHtml = '';
+            if (headings.length > 0) {
+                tocHtml = `
+                    <div class="mb-12 bg-slate-50 p-6 rounded-lg border border-slate-200 break-inside-avoid">
+                        <h3 class="text-xl font-serif font-bold text-blue-900 mb-4 border-b border-slate-300 pb-2">Sommaire</h3>
+                        <ul class="space-y-2">
+                            ${headings.map((h, i) => `
+                                <li class="flex justify-between text-sm">
+                                    <span class="font-medium text-slate-700">${i+1}. ${h.title}</span>
+                                    <span class="border-b border-dotted border-slate-300 flex-1 mx-2 relative top-[-4px]"></span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Generate Sections
+            const sectionsHtml = r.sections.map((s, i) => {
+                if (s.type === 'heading') {
+                    return `<h2 class="text-2xl font-serif font-bold text-blue-900 mt-8 mb-4 border-l-4 border-blue-600 pl-4 break-after-avoid">${s.title}</h2>`;
+                } else if (s.type === 'paragraph') {
+                    return `<p class="text-justify leading-relaxed text-slate-800 whitespace-pre-line mb-4">${s.content || ''}</p>`;
+                } else if (s.type === 'image' && s.imageUrl) {
+                    return `
+                        <figure class="my-8 flex flex-col items-center break-inside-avoid">
+                            <img src="${s.imageUrl}" class="max-w-full max-h-[400px] rounded shadow-md border border-slate-200">
+                            ${s.imageCaption ? `<figcaption class="mt-3 text-sm font-medium text-slate-500 italic">Figure: ${s.imageCaption}</figcaption>` : ''}
+                        </figure>
+                    `;
+                }
+                return '';
+            }).join('');
+
+            container.innerHTML = `
+                <header class="text-center border-b-4 border-blue-900 pb-8 mb-12">
+                    <h1 class="text-4xl font-serif font-bold text-blue-900 mb-4">${r.title}</h1>
+                    ${r.subject ? `<h2 class="text-xl text-slate-600 font-medium mb-4 uppercase tracking-wider">${r.subject}</h2>` : ''}
+                    <div class="flex justify-center items-center gap-4 text-sm text-slate-500 mt-8">
+                        <span>${r.author || 'Auteur'}</span> • <span>${dateFormatted}</span>
+                    </div>
+                </header>
+                ${tocHtml}
+                <div class="content">
+                    ${sectionsHtml}
+                </div>
+                <footer class="mt-20 pt-8 border-t border-slate-200 text-center text-xs text-slate-400">
+                    Généré par Rapport Pro • ${new Date().getFullYear()}
+                </footer>
+            `;
+        }
+
+        // --- CHATI CHATI (AI) ---
+        function checkApiKey() {
+            if (state.apiKey && state.apiKey.startsWith('sk-')) {
+                document.getElementById('api-key-section').classList.add('hidden');
+                document.getElementById('chat-interface').classList.remove('hidden');
+            } else {
+                document.getElementById('api-key-section').classList.remove('hidden');
+                document.getElementById('chat-interface').classList.add('hidden');
+            }
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('openai-key').value.trim();
+            if (key.startsWith('sk-')) {
+                state.apiKey = key;
+                localStorage.setItem('openai_api_key', key);
+                checkApiKey();
+                alert("Clé enregistrée !");
+            } else {
+                alert("Clé invalide. Elle doit commencer par 'sk-'.");
+            }
+        }
+
+        async function generateWithAI() {
+            const topic = document.getElementById('ai-topic').value;
+            const instructions = document.getElementById('ai-instructions').value;
+            const btn = document.getElementById('btn-generate');
+
+            if (!topic) return alert("Veuillez entrer un sujet.");
+
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin"></i> Génération...`;
+            lucide.createIcons();
+
+            try {
+                const systemPrompt = `
+                    Tu es un expert en rédaction de rapports professionnels.
+                    Génère une structure JSON valide pour un rapport sur le sujet donné.
+                    Format attendu:
+                    {
+                        "title": "Titre",
+                        "subject": "Sous-titre",
+                        "sections": [
+                            {"type": "heading", "title": "Titre section"},
+                            {"type": "paragraph", "content": "Contenu détaillé (min 3 phrases)."}
+                        ]
+                    }
+                    Règles: Ton pro, structure claire (Intro, Dev, Conclusion). Pas d'images.
+                `;
+
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4o", // Fallback to gpt-3.5-turbo if needed
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: `Sujet: ${topic}\nInstructions: ${instructions}` }
+                        ],
+                        response_format: { type: "json_object" }
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error.message);
+
+                const content = JSON.parse(data.choices[0].message.content);
+                
+                // Update State
+                state.report.title = content.title;
+                state.report.subject = content.subject;
+                state.report.sections = content.sections.map(s => ({
+                    ...s,
+                    id: crypto.randomUUID(),
+                    imageUrl: '',
+                    imageCaption: ''
+                }));
+
+                // Reset UI
+                renderEditor();
+                renderPreview();
+                showPage('editor');
+                alert("Rapport généré ! Vérifiez et ajustez le contenu.");
+
+            } catch (error) {
+                console.error(error);
+                alert("Erreur lors de la génération: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="wand-2"></i> Générer le Rapport`;
+                lucide.createIcons();
+            }
+        }
+
+        // --- HISTORY & STORAGE ---
+        function saveReportToHistory() {
+            const existingIndex = state.history.findIndex(r => r.id === state.report.id);
+            if (existingIndex >= 0) {
+                state.history[existingIndex] = JSON.parse(JSON.stringify(state.report));
+            } else {
+                state.history.push(JSON.parse(JSON.stringify(state.report)));
+            }
+            localStorage.setItem('saved_reports', JSON.stringify(state.history));
+            alert("Rapport sauvegardé dans l'historique.");
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            if (state.history.length === 0) {
+                container.innerHTML = `<div class="col-span-3 text-center text-slate-400">Aucun historique.</div>`;
+                return;
+            }
+
+            container.innerHTML = state.history.map(r => `
+                <div class="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md cursor-pointer transition-all" onclick="loadReport('${r.id}')">
+                    <h3 class="font-serif font-bold text-lg text-blue-900 mb-1">${r.title}</h3>
+                    <p class="text-sm text-slate-500 mb-4">${r.subject || 'Sans sujet'}</p>
+                    <div class="flex justify-between items-center text-xs text-slate-400 border-t pt-3">
+                        <span>${new Date(r.date).toLocaleDateString()}</span>
+                        <button onclick="deleteReport(event, '${r.id}')" class="text-red-500 hover:text-red-700 font-bold">Supprimer</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadReport(id) {
+            const found = state.history.find(r => r.id === id);
+            if (found) {
+                state.report = JSON.parse(JSON.stringify(found)); // Deep copy
+                renderEditor();
+                renderPreview();
+                showPage('editor');
+            }
+        }
+
+        function deleteReport(e, id) {
+            e.stopPropagation();
+            if (confirm("Supprimer ce rapport ?")) {
+                state.history = state.history.filter(r => r.id !== id);
+                localStorage.setItem('saved_reports', JSON.stringify(state.history));
+                renderHistory();
+                // If deleted current report, reset
+                if (state.report.id === id) {
+                    state.report = {
+                        id: crypto.randomUUID(),
+                        title: "Nouveau Rapport",
+                        sections: [],
+                        date: new Date().toISOString()
+                    };
+                    renderEditor();
+                    renderPreview();
+                }
+            }
+        }
+
+        // --- EXPORT FUNCTIONS ---
+        function generatePDF() {
+            const element = document.getElementById('report-preview-container');
+            const opt = {
+                margin: 10,
+                filename: `${state.report.title.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function generateWord() {
+            // Using docx global
+            const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
+            
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    children: [
+                        // Title
+                        new Paragraph({
+                            text: state.report.title,
+                            heading: HeadingLevel.TITLE,
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 300 },
+                        }),
+                        // Subject
+                        new Paragraph({
+                            text: state.report.subject || "",
+                            heading: HeadingLevel.HEADING_2,
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 200 },
+                        }),
+                        // Meta
+                        new Paragraph({
+                            children: [
+                                new TextRun({ text: `Auteur: ${state.report.author || ''}`, bold: true }),
+                                new TextRun({ text: `\nDate: ${new Date(state.report.date).toLocaleDateString()}`, break: 1 }),
+                            ],
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 500 },
+                        }),
+                        
+                        // Sections
+                        ...state.report.sections.flatMap(s => {
+                            const els = [];
+                            if (s.type === 'heading') {
+                                els.push(new Paragraph({
+                                    text: s.title,
+                                    heading: HeadingLevel.HEADING_1,
+                                    spacing: { before: 400, after: 200 },
+                                }));
+                            } else if (s.type === 'paragraph') {
+                                els.push(new Paragraph({
+                                    text: s.content,
+                                    spacing: { after: 200 },
+                                    alignment: AlignmentType.JUSTIFIED
+                                }));
+                            } else if (s.type === 'image') {
+                                els.push(new Paragraph({
+                                    children: [new TextRun({text: "[Image: Voir PDF pour le rendu visuel]", italics: true})],
+                                    alignment: AlignmentType.CENTER,
+                                    spacing: { after: 100 }
+                                }));
+                                if (s.imageCaption) {
+                                    els.push(new Paragraph({
+                                        text: `Figure: ${s.imageCaption}`,
+                                        alignment: AlignmentType.CENTER,
+                                        style: "Caption"
+                                    }));
+                                }
+                            }
+                            return els;
+                        })
+                    ]
+                }]
+            });
+
+            Packer.toBlob(doc).then(blob => {
+                saveAs(blob, `${state.report.title.replace(/\s+/g, '_')}.docx`);
+            });
+        }
+
+    </script>
 </body>
 </html>
