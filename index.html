@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Générateur de Rapports Pro</title>
     
     <!-- Libraries -->
@@ -40,6 +40,7 @@
             background: white;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             position: relative;
+            transform-origin: top center;
         }
 
         /* Print Styles */
@@ -57,6 +58,7 @@
                 width: 100%;
                 margin: 0;
                 padding: 0;
+                transform: none !important;
             }
             .a4-page {
                 box-shadow: none;
@@ -78,7 +80,12 @@
         }
 
         .hidden-section {
-            display: none;
+            display: none !important;
+        }
+
+        /* Mobile Sidebar Transition */
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
         }
     </style>
     
@@ -95,17 +102,38 @@
         }
     </script>
 </head>
-<body class="h-screen flex overflow-hidden text-slate-800">
+<body class="h-screen flex flex-col md:flex-row overflow-hidden text-slate-800 bg-slate-50">
+
+    <!-- MOBILE HEADER -->
+    <header class="md:hidden bg-slate-900 text-white p-4 flex items-center justify-between shadow-md z-20 relative">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-800 rounded-lg">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <h1 class="text-lg font-serif font-bold flex items-center gap-2">
+                <i data-lucide="file-text" class="text-blue-400 w-5 h-5"></i> Rapport Pro
+            </h1>
+        </div>
+    </header>
+
+    <!-- SIDEBAR OVERLAY (Mobile) -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-slate-900 text-white h-full flex flex-col flex-shrink-0 shadow-xl z-10">
-        <div class="p-6 border-b border-slate-800">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-slate-900 text-white h-full flex flex-col shadow-2xl z-40 transform -translate-x-full md:translate-x-0 md:relative md:flex sidebar-transition">
+        <div class="p-6 border-b border-slate-800 hidden md:block">
             <h1 class="text-xl font-serif font-bold flex items-center gap-2">
                 <i data-lucide="file-text" class="text-blue-400"></i> Rapport Pro
             </h1>
         </div>
         
-        <nav class="flex-1 p-4 space-y-2">
+        <div class="p-4 md:hidden flex justify-end border-b border-slate-800">
+            <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-800 rounded text-slate-400">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <button onclick="showPage('editor')" id="nav-editor" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-blue-700 text-white">
                 <i data-lucide="edit-3" size="20"></i>
                 <span class="font-medium">Éditeur</span>
@@ -126,16 +154,23 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 flex h-full overflow-hidden relative">
+    <main class="flex-1 flex h-full overflow-hidden relative w-full">
         
         <!-- PAGE: EDITOR -->
-        <div id="page-editor" class="flex-1 flex w-full h-full">
-            <!-- Editor Inputs (Left) -->
-            <div class="w-full md:w-1/2 h-full overflow-y-auto p-6 bg-slate-50 border-r border-slate-200">
-                <div class="max-w-2xl mx-auto space-y-8 pb-20">
+        <div id="page-editor" class="flex-1 flex flex-col md:flex-row w-full h-full relative">
+            
+            <!-- Mobile Tabs (Visible only on Mobile) -->
+            <div class="md:hidden bg-white border-b border-slate-200 flex text-sm font-medium z-10 shrink-0">
+                <button onclick="setMobileTab('edit')" id="tab-edit" class="flex-1 py-3 text-blue-600 border-b-2 border-blue-600">Édition</button>
+                <button onclick="setMobileTab('preview')" id="tab-preview" class="flex-1 py-3 text-slate-500 border-b-2 border-transparent">Aperçu</button>
+            </div>
+
+            <!-- Editor Inputs (Left Panel) -->
+            <div id="editor-panel-inputs" class="w-full md:w-1/2 h-full overflow-y-auto p-4 md:p-6 bg-slate-50 border-r border-slate-200 pb-24 md:pb-20">
+                <div class="max-w-2xl mx-auto space-y-6 md:space-y-8">
                     
                     <!-- Metadata -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
                         <h2 class="text-lg font-bold text-blue-900 flex items-center gap-2">
                             <i data-lucide="info"></i> Informations
                         </h2>
@@ -144,7 +179,7 @@
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Titre du Rapport</label>
                                 <input type="text" id="input-title" oninput="updateReport('title', this.value)" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-serif font-bold" placeholder="Titre...">
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700 mb-1">Sujet / Sous-titre</label>
                                     <input type="text" id="input-subject" oninput="updateReport('subject', this.value)" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Sujet...">
@@ -159,16 +194,16 @@
 
                     <!-- Sections List -->
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center">
+                        <div class="flex flex-wrap justify-between items-center gap-2">
                             <h3 class="text-lg font-bold text-slate-700">Contenu</h3>
                             <div class="flex gap-2">
-                                <button onclick="addSection('heading')" class="px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 text-sm font-medium flex items-center gap-1">
+                                <button onclick="addSection('heading')" class="px-2 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 text-xs md:text-sm font-medium flex items-center gap-1">
                                     <i data-lucide="heading" class="w-4 h-4"></i> Titre
                                 </button>
-                                <button onclick="addSection('paragraph')" class="px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 text-sm font-medium flex items-center gap-1">
+                                <button onclick="addSection('paragraph')" class="px-2 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 text-xs md:text-sm font-medium flex items-center gap-1">
                                     <i data-lucide="align-left" class="w-4 h-4"></i> Texte
                                 </button>
-                                <button onclick="addSection('image')" class="px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 text-sm font-medium flex items-center gap-1">
+                                <button onclick="addSection('image')" class="px-2 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 text-xs md:text-sm font-medium flex items-center gap-1">
                                     <i data-lucide="image" class="w-4 h-4"></i> Image
                                 </button>
                             </div>
@@ -177,43 +212,43 @@
                         <div id="sections-container" class="space-y-4">
                             <!-- Sections will be injected here by JS -->
                             <div class="text-center py-10 border-2 border-dashed border-slate-300 rounded-lg text-slate-400">
-                                Aucun contenu. Ajoutez une section ou utilisez Chati Chati.
+                                Aucun contenu. Ajoutez une section.
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Floating Actions Bar -->
-                <div class="fixed bottom-6 left-6 md:left-[calc(256px+24px)] right-6 md:right-[calc(50%+24px)] bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg border border-slate-200 flex justify-between items-center z-20">
-                    <button onclick="saveReportToHistory()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-lg transition-transform active:scale-95">
-                        <i data-lucide="save" class="w-4 h-4"></i> Sauvegarder
-                    </button>
-                    <div class="flex gap-2">
-                        <button onclick="generatePDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-lg transition-transform active:scale-95">
-                            <i data-lucide="file-down" class="w-4 h-4"></i> PDF
-                        </button>
-                        <button onclick="generateWord()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-lg transition-transform active:scale-95">
-                            <i data-lucide="file-text" class="w-4 h-4"></i> Word
-                        </button>
-                    </div>
+            <!-- Preview (Right Panel / Tab) -->
+            <div id="editor-panel-preview" class="hidden md:flex w-full md:w-1/2 h-full bg-slate-200 p-4 md:p-8 overflow-y-auto justify-center items-start absolute md:static inset-0 z-0 mt-[49px] md:mt-0">
+                <div id="report-preview-container" class="a4-page text-slate-900 transform origin-top scale-[0.5] sm:scale-[0.65] md:scale-[0.7] lg:scale-[0.8] xl:scale-100 transition-transform">
+                    <!-- Preview content injected here -->
                 </div>
             </div>
 
-            <!-- Preview (Right) -->
-            <div class="hidden md:flex w-1/2 h-full bg-slate-200 p-8 overflow-y-auto justify-center items-start">
-                <div id="report-preview-container" class="a4-page text-slate-900 transform origin-top scale-[0.85] xl:scale-100 transition-transform">
-                    <!-- Preview content injected here -->
+            <!-- Floating Actions Bar -->
+            <div class="fixed bottom-4 left-4 right-4 md:left-[calc(256px+24px)] md:right-[calc(50%+24px)] bg-white/95 backdrop-blur p-3 md:p-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200 flex justify-between items-center z-20 safe-area-bottom">
+                <button onclick="saveReportToHistory()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md text-sm md:text-base">
+                    <i data-lucide="save" class="w-4 h-4"></i> <span class="hidden xs:inline">Sauver</span>
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="generatePDF()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md text-sm md:text-base">
+                        <i data-lucide="file-down" class="w-4 h-4"></i> PDF
+                    </button>
+                    <button onclick="generateWord()" class="bg-blue-700 hover:bg-blue-800 text-white px-3 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md text-sm md:text-base">
+                        <i data-lucide="file-text" class="w-4 h-4"></i> DOCX
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- PAGE: CHATI CHATI -->
-        <div id="page-chati" class="hidden-section w-full h-full overflow-y-auto bg-slate-50 p-6 md:p-12">
+        <div id="page-chati" class="hidden-section w-full h-full overflow-y-auto bg-slate-50 p-4 md:p-12 pb-24">
             <div class="max-w-3xl mx-auto space-y-8">
-                <div class="text-center space-y-4">
-                    <h1 class="text-4xl font-serif font-bold text-blue-900">Chati Chati 🤖</h1>
-                    <p class="text-lg text-slate-600">
-                        Votre assistant IA pour rédiger des rapports professionnels en quelques secondes.
+                <div class="text-center space-y-4 mt-4 md:mt-0">
+                    <h1 class="text-3xl md:text-4xl font-serif font-bold text-blue-900">Chati Chati 🤖</h1>
+                    <p class="text-base md:text-lg text-slate-600">
+                        Votre assistant IA pour rédiger des rapports professionnels.
                     </p>
                 </div>
 
@@ -222,25 +257,25 @@
                     <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
                         <i data-lucide="key" class="text-yellow-500"></i> Configuration Clé OpenAI
                     </h3>
-                    <div class="flex gap-4">
+                    <div class="flex flex-col md:flex-row gap-4">
                         <input type="password" id="openai-key" class="flex-1 p-3 border border-slate-300 rounded-lg" placeholder="sk-...">
-                        <button onclick="saveApiKey()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700">
+                        <button onclick="saveApiKey()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 w-full md:w-auto">
                             Enregistrer
                         </button>
                     </div>
-                    <p class="text-xs text-slate-500 mt-2">Votre clé est stockée localement dans votre navigateur. Elle n'est jamais partagée.</p>
+                    <p class="text-xs text-slate-500 mt-2">Votre clé est stockée localement. Non partagée.</p>
                 </div>
 
                 <!-- Chat Interface -->
                 <div id="chat-interface" class="hidden bg-white p-6 rounded-xl shadow-lg border border-blue-100 space-y-6">
                     <div class="space-y-2">
                         <label class="font-bold text-slate-700">Sujet du Rapport</label>
-                        <input type="text" id="ai-topic" class="w-full p-4 text-lg border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ex: L'impact de l'IA sur l'emploi...">
+                        <input type="text" id="ai-topic" class="w-full p-4 text-lg border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ex: L'impact de l'IA...">
                     </div>
                     
                     <div class="space-y-2">
-                        <label class="font-bold text-slate-700">Instructions Spécifiques</label>
-                        <textarea id="ai-instructions" class="w-full p-4 h-32 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ex: Fais un plan en 3 parties, inclus une conclusion optimiste..."></textarea>
+                        <label class="font-bold text-slate-700">Instructions</label>
+                        <textarea id="ai-instructions" class="w-full p-4 h-32 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Détails, ton, structure..."></textarea>
                     </div>
 
                     <button onclick="generateWithAI()" id="btn-generate" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold text-lg shadow-lg hover:scale-[1.01] transition-transform flex justify-center items-center gap-2">
@@ -251,9 +286,9 @@
         </div>
 
         <!-- PAGE: HISTORY -->
-        <div id="page-history" class="hidden-section w-full h-full overflow-y-auto bg-slate-50 p-6 md:p-12">
-            <div class="max-w-5xl mx-auto space-y-8">
-                <h1 class="text-3xl font-serif font-bold text-blue-900">Historique des Rapports</h1>
+        <div id="page-history" class="hidden-section w-full h-full overflow-y-auto bg-slate-50 p-4 md:p-12 pb-24">
+            <div class="max-w-5xl mx-auto space-y-8 mt-4 md:mt-0">
+                <h1 class="text-3xl font-serif font-bold text-blue-900">Historique</h1>
                 
                 <div id="history-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- History items injected here -->
@@ -276,7 +311,8 @@
                 sections: []
             },
             apiKey: localStorage.getItem('openai_api_key') || '',
-            history: JSON.parse(localStorage.getItem('saved_reports') || '[]')
+            history: JSON.parse(localStorage.getItem('saved_reports') || '[]'),
+            mobileTab: 'edit' // edit | preview
         };
 
         // --- INITIALIZATION ---
@@ -286,10 +322,72 @@
             renderPreview();
             checkApiKey();
             renderHistory();
+            
+            // Handle Resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    // Reset mobile specific visibility on desktop
+                    document.getElementById('editor-panel-inputs').classList.remove('hidden');
+                    document.getElementById('editor-panel-preview').classList.remove('hidden');
+                    document.getElementById('sidebar').classList.remove('-translate-x-full');
+                    document.getElementById('sidebar-overlay').classList.add('hidden');
+                } else {
+                    // Re-apply mobile tab state
+                    setMobileTab(state.mobileTab);
+                    document.getElementById('sidebar').classList.add('-translate-x-full');
+                    document.getElementById('sidebar-overlay').classList.add('hidden');
+                }
+            });
         });
+
+        // --- MOBILE UI ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function setMobileTab(tab) {
+            state.mobileTab = tab;
+            const inputs = document.getElementById('editor-panel-inputs');
+            const preview = document.getElementById('editor-panel-preview');
+            const tabEdit = document.getElementById('tab-edit');
+            const tabPreview = document.getElementById('tab-preview');
+
+            if (window.innerWidth < 768) {
+                if (tab === 'edit') {
+                    inputs.classList.remove('hidden');
+                    preview.classList.add('hidden');
+                    tabEdit.classList.add('text-blue-600', 'border-blue-600');
+                    tabEdit.classList.remove('text-slate-500', 'border-transparent');
+                    tabPreview.classList.remove('text-blue-600', 'border-blue-600');
+                    tabPreview.classList.add('text-slate-500', 'border-transparent');
+                } else {
+                    inputs.classList.add('hidden');
+                    preview.classList.remove('hidden');
+                    tabPreview.classList.add('text-blue-600', 'border-blue-600');
+                    tabPreview.classList.remove('text-slate-500', 'border-transparent');
+                    tabEdit.classList.remove('text-blue-600', 'border-blue-600');
+                    tabEdit.classList.add('text-slate-500', 'border-transparent');
+                }
+            }
+        }
 
         // --- NAVIGATION ---
         function showPage(pageId) {
+            // Close sidebar on mobile selection
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+
             // Hide all pages
             ['editor', 'chati', 'history'].forEach(p => {
                 document.getElementById(`page-${p}`).classList.add('hidden-section');
@@ -304,7 +402,6 @@
             navBtn.classList.remove('text-slate-400', 'hover:bg-slate-800');
             navBtn.classList.add('bg-blue-700', 'text-white');
 
-            // Specific page logic
             if (pageId === 'page-history') renderHistory();
         }
 
@@ -325,13 +422,16 @@
             });
             renderEditor();
             renderPreview();
+            
+            // Switch to edit tab on add if mobile
+            if(window.innerWidth < 768) setMobileTab('edit');
         }
 
         function updateSection(id, field, value) {
             const section = state.report.sections.find(s => s.id === id);
             if (section) {
                 section[field] = value;
-                renderPreview(); // Real-time preview
+                renderPreview();
             }
         }
 
@@ -355,7 +455,6 @@
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     updateSection(sectionId, 'imageUrl', reader.result);
-                    // Also update the preview for the input thumbnail
                     const imgPreview = document.getElementById(`img-preview-${sectionId}`);
                     if(imgPreview) imgPreview.src = reader.result;
                 };
@@ -365,12 +464,10 @@
 
         // --- RENDERING ---
         function renderEditor() {
-            // Inputs
             document.getElementById('input-title').value = state.report.title;
             document.getElementById('input-subject').value = state.report.subject || '';
             document.getElementById('input-author').value = state.report.author || '';
 
-            // Sections
             const container = document.getElementById('sections-container');
             container.innerHTML = '';
 
@@ -384,10 +481,8 @@
                 div.className = "bg-white p-4 rounded-lg border border-slate-200 shadow-sm relative group hover:border-blue-400 transition-colors";
                 
                 let contentHtml = '';
-                
-                // Controls
                 const controls = `
-                    <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div class="absolute top-2 right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-white/90 md:bg-transparent rounded border md:border-none border-slate-100 p-1 md:p-0 shadow-sm md:shadow-none">
                         <button onclick="moveSection(${index}, -1)" class="p-1 hover:bg-slate-100 rounded text-slate-600"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
                         <button onclick="moveSection(${index}, 1)" class="p-1 hover:bg-slate-100 rounded text-slate-600"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
                         <button onclick="removeSection('${section.id}')" class="p-1 hover:bg-red-100 rounded text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
@@ -396,7 +491,7 @@
 
                 if (section.type === 'heading') {
                     contentHtml = `
-                        <label class="block text-xs font-bold text-blue-600 uppercase mb-1">Titre de section</label>
+                        <label class="block text-xs font-bold text-blue-600 uppercase mb-1">Titre</label>
                         <input type="text" value="${section.title}" oninput="updateSection('${section.id}', 'title', this.value)" class="w-full p-2 font-bold text-lg border-b border-slate-200 focus:border-blue-500 outline-none">
                     `;
                 } else if (section.type === 'paragraph') {
@@ -407,11 +502,11 @@
                 } else if (section.type === 'image') {
                     contentHtml = `
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Image</label>
-                        <div class="flex gap-4 items-start">
-                            <div class="w-24 h-24 bg-slate-100 rounded border flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div class="flex flex-col sm:flex-row gap-4 items-start">
+                            <div class="w-full sm:w-24 h-24 bg-slate-100 rounded border flex items-center justify-center overflow-hidden flex-shrink-0">
                                 ${section.imageUrl ? `<img id="img-preview-${section.id}" src="${section.imageUrl}" class="w-full h-full object-cover">` : `<i data-lucide="image" class="text-slate-300"></i>`}
                             </div>
-                            <div class="flex-1 space-y-2">
+                            <div class="flex-1 space-y-2 w-full">
                                 <input type="file" accept="image/*" onchange="handleImageUpload(this.files[0], '${section.id}')" class="text-sm block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                                 <input type="text" value="${section.imageCaption || ''}" oninput="updateSection('${section.id}', 'imageCaption', this.value)" placeholder="Légende..." class="w-full p-2 text-sm border border-slate-200 rounded">
                             </div>
@@ -422,8 +517,6 @@
                 div.innerHTML = controls + contentHtml;
                 container.appendChild(div);
             });
-            
-            // Re-init icons for new elements
             lucide.createIcons();
         }
 
@@ -432,7 +525,6 @@
             const r = state.report;
             const dateFormatted = new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-            // Generate Table of Contents
             const headings = r.sections.filter(s => s.type === 'heading');
             let tocHtml = '';
             if (headings.length > 0) {
@@ -451,7 +543,6 @@
                 `;
             }
 
-            // Generate Sections
             const sectionsHtml = r.sections.map((s, i) => {
                 if (s.type === 'heading') {
                     return `<h2 class="text-2xl font-serif font-bold text-blue-900 mt-8 mb-4 border-l-4 border-blue-600 pl-4 break-after-avoid">${s.title}</h2>`;
@@ -470,8 +561,8 @@
 
             container.innerHTML = `
                 <header class="text-center border-b-4 border-blue-900 pb-8 mb-12">
-                    <h1 class="text-4xl font-serif font-bold text-blue-900 mb-4">${r.title}</h1>
-                    ${r.subject ? `<h2 class="text-xl text-slate-600 font-medium mb-4 uppercase tracking-wider">${r.subject}</h2>` : ''}
+                    <h1 class="text-4xl font-serif font-bold text-blue-900 mb-4 break-words">${r.title}</h1>
+                    ${r.subject ? `<h2 class="text-xl text-slate-600 font-medium mb-4 uppercase tracking-wider break-words">${r.subject}</h2>` : ''}
                     <div class="flex justify-center items-center gap-4 text-sm text-slate-500 mt-8">
                         <span>${r.author || 'Auteur'}</span> • <span>${dateFormatted}</span>
                     </div>
@@ -523,17 +614,16 @@
             try {
                 const systemPrompt = `
                     Tu es un expert en rédaction de rapports professionnels.
-                    Génère une structure JSON valide pour un rapport sur le sujet donné.
+                    Génère une structure JSON valide.
                     Format attendu:
                     {
                         "title": "Titre",
                         "subject": "Sous-titre",
                         "sections": [
-                            {"type": "heading", "title": "Titre section"},
-                            {"type": "paragraph", "content": "Contenu détaillé (min 3 phrases)."}
+                            {"type": "heading", "title": "Titre"},
+                            {"type": "paragraph", "content": "Contenu (min 3 phrases)."}
                         ]
                     }
-                    Règles: Ton pro, structure claire (Intro, Dev, Conclusion). Pas d'images.
                 `;
 
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -543,7 +633,7 @@
                         'Authorization': `Bearer ${state.apiKey}`
                     },
                     body: JSON.stringify({
-                        model: "gpt-4o", // Fallback to gpt-3.5-turbo if needed
+                        model: "gpt-4o",
                         messages: [
                             { role: "system", content: systemPrompt },
                             { role: "user", content: `Sujet: ${topic}\nInstructions: ${instructions}` }
@@ -554,10 +644,8 @@
 
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
-
                 const content = JSON.parse(data.choices[0].message.content);
                 
-                // Update State
                 state.report.title = content.title;
                 state.report.subject = content.subject;
                 state.report.sections = content.sections.map(s => ({
@@ -567,15 +655,15 @@
                     imageCaption: ''
                 }));
 
-                // Reset UI
                 renderEditor();
                 renderPreview();
                 showPage('editor');
-                alert("Rapport généré ! Vérifiez et ajustez le contenu.");
+                if(window.innerWidth < 768) setMobileTab('edit');
+                alert("Rapport généré !");
 
             } catch (error) {
                 console.error(error);
-                alert("Erreur lors de la génération: " + error.message);
+                alert("Erreur: " + error.message);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i data-lucide="wand-2"></i> Générer le Rapport`;
@@ -583,7 +671,7 @@
             }
         }
 
-        // --- HISTORY & STORAGE ---
+        // --- HISTORY ---
         function saveReportToHistory() {
             const existingIndex = state.history.findIndex(r => r.id === state.report.id);
             if (existingIndex >= 0) {
@@ -592,7 +680,7 @@
                 state.history.push(JSON.parse(JSON.stringify(state.report)));
             }
             localStorage.setItem('saved_reports', JSON.stringify(state.history));
-            alert("Rapport sauvegardé dans l'historique.");
+            alert("Sauvegardé !");
             renderHistory();
         }
 
@@ -605,8 +693,8 @@
 
             container.innerHTML = state.history.map(r => `
                 <div class="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md cursor-pointer transition-all" onclick="loadReport('${r.id}')">
-                    <h3 class="font-serif font-bold text-lg text-blue-900 mb-1">${r.title}</h3>
-                    <p class="text-sm text-slate-500 mb-4">${r.subject || 'Sans sujet'}</p>
+                    <h3 class="font-serif font-bold text-lg text-blue-900 mb-1 truncate">${r.title}</h3>
+                    <p class="text-sm text-slate-500 mb-4 truncate">${r.subject || 'Sans sujet'}</p>
                     <div class="flex justify-between items-center text-xs text-slate-400 border-t pt-3">
                         <span>${new Date(r.date).toLocaleDateString()}</span>
                         <button onclick="deleteReport(event, '${r.id}')" class="text-red-500 hover:text-red-700 font-bold">Supprimer</button>
@@ -618,7 +706,7 @@
         function loadReport(id) {
             const found = state.history.find(r => r.id === id);
             if (found) {
-                state.report = JSON.parse(JSON.stringify(found)); // Deep copy
+                state.report = JSON.parse(JSON.stringify(found));
                 renderEditor();
                 renderPreview();
                 showPage('editor');
@@ -627,11 +715,10 @@
 
         function deleteReport(e, id) {
             e.stopPropagation();
-            if (confirm("Supprimer ce rapport ?")) {
+            if (confirm("Supprimer ?")) {
                 state.history = state.history.filter(r => r.id !== id);
                 localStorage.setItem('saved_reports', JSON.stringify(state.history));
                 renderHistory();
-                // If deleted current report, reset
                 if (state.report.id === id) {
                     state.report = {
                         id: crypto.randomUUID(),
@@ -645,9 +732,11 @@
             }
         }
 
-        // --- EXPORT FUNCTIONS ---
+        // --- EXPORT ---
         function generatePDF() {
             const element = document.getElementById('report-preview-container');
+            // Clone to remove transform scale for PDF generation if needed, or just use raw
+            // html2pdf handles DOM elements.
             const opt = {
                 margin: 10,
                 filename: `${state.report.title.replace(/\s+/g, '_')}.pdf`,
@@ -659,28 +748,23 @@
         }
 
         function generateWord() {
-            // Using docx global
             const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
-            
             const doc = new Document({
                 sections: [{
                     properties: {},
                     children: [
-                        // Title
                         new Paragraph({
                             text: state.report.title,
                             heading: HeadingLevel.TITLE,
                             alignment: AlignmentType.CENTER,
                             spacing: { after: 300 },
                         }),
-                        // Subject
                         new Paragraph({
                             text: state.report.subject || "",
                             heading: HeadingLevel.HEADING_2,
                             alignment: AlignmentType.CENTER,
                             spacing: { after: 200 },
                         }),
-                        // Meta
                         new Paragraph({
                             children: [
                                 new TextRun({ text: `Auteur: ${state.report.author || ''}`, bold: true }),
@@ -689,8 +773,6 @@
                             alignment: AlignmentType.CENTER,
                             spacing: { after: 500 },
                         }),
-                        
-                        // Sections
                         ...state.report.sections.flatMap(s => {
                             const els = [];
                             if (s.type === 'heading') {
@@ -707,16 +789,12 @@
                                 }));
                             } else if (s.type === 'image') {
                                 els.push(new Paragraph({
-                                    children: [new TextRun({text: "[Image: Voir PDF pour le rendu visuel]", italics: true})],
+                                    children: [new TextRun({text: "[Image: Voir PDF]", italics: true})],
                                     alignment: AlignmentType.CENTER,
                                     spacing: { after: 100 }
                                 }));
                                 if (s.imageCaption) {
-                                    els.push(new Paragraph({
-                                        text: `Figure: ${s.imageCaption}`,
-                                        alignment: AlignmentType.CENTER,
-                                        style: "Caption"
-                                    }));
+                                    els.push(new Paragraph({ text: `Figure: ${s.imageCaption}`, alignment: AlignmentType.CENTER, style: "Caption" }));
                                 }
                             }
                             return els;
@@ -724,12 +802,10 @@
                     ]
                 }]
             });
-
             Packer.toBlob(doc).then(blob => {
                 saveAs(blob, `${state.report.title.replace(/\s+/g, '_')}.docx`);
             });
         }
-
     </script>
 </body>
 </html>
