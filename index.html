@@ -774,10 +774,9 @@
                     body: JSON.stringify({
                         model: "Meta-Llama-3.1-70B-Instruct",
                         messages: [
-                            { role: "system", content: "Tu es un expert en rapports. Réponds UNIQUEMENT un JSON valide: { title, subject, sections: [{type: 'heading'|'paragraph', title?, content?}] }." },
-                            { role: "user", content: `Sujet: ${topic}. Instructions: ${instr}` }
-                        ],
-                        response_format: { type: "json_object" }
+                            { role: "system", content: "Tu es un expert en rédaction de rapports professionnels. Tu dois répondre UNIQUEMENT avec du JSON valide, sans texte supplémentaire. Format exact requis:\n{\n  \"title\": \"Titre du rapport\",\n  \"subject\": \"Sous-titre\",\n  \"sections\": [\n    {\"type\": \"heading\", \"title\": \"Titre section\"},\n    {\"type\": \"paragraph\", \"content\": \"Texte du paragraphe. Minimum 3 phrases.\"},\n    {\"type\": \"heading\", \"title\": \"Autre section\"},\n    {\"type\": \"paragraph\", \"content\": \"Plus de contenu...\"}\n  ]\n}" },
+                            { role: "user", content: `Sujet du rapport: ${topic}\n\nInstructions spéciales: ${instr || 'Aucune'}\n\nCrée un rapport professionnel avec structure Sommaire -> Introduction -> Développement -> Conclusion. Réponds UNIQUEMENT le JSON, rien d'autre.` }
+                        ]
                     })
                 });
                 
@@ -787,22 +786,44 @@
                     throw new Error(data.error.message);
                 }
                 
-                const json = JSON.parse(data.choices[0].message.content);
+                let content = data.choices[0].message.content.trim();
+                
+                // Extraction robuste du JSON
+                let jsonObj;
+                try {
+                    jsonObj = JSON.parse(content);
+                } catch (e) {
+                    // Essayer d'extraire le JSON s'il y a du texte autour
+                    const jsonMatch = content.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        jsonObj = JSON.parse(jsonMatch[0]);
+                    } else {
+                        throw new Error("Impossible de parser la réponse IA. Réessayez.");
+                    }
+                }
+                
+                // Validation
+                if (!jsonObj.title || !jsonObj.sections || !Array.isArray(jsonObj.sections)) {
+                    throw new Error("Format de réponse IA incorrect.");
+                }
                 
                 // Apply
-                app.report.title = json.title;
-                app.report.subject = json.subject;
-                app.report.sections = json.sections.map(s => ({
-                    ...s,
+                app.report.title = jsonObj.title;
+                app.report.subject = jsonObj.subject || '';
+                app.report.sections = jsonObj.sections.map(s => ({
+                    type: s.type || 'paragraph',
+                    title: s.title || '',
+                    content: s.content || '',
                     id: crypto.randomUUID(),
                     image: ''
                 }));
                 
                 navigateTo('editor');
-                alert("Rapport généré avec succès !");
+                alert("Rapport généré avec succès ! Vous pouvez maintenant l'affiner.");
 
             } catch (e) {
-                alert("Erreur IA: " + e.message);
+                console.error(e);
+                alert("Erreur IA: " + e.message + "\n\nVérifiez votre clé API et que vous avez du crédit SambaNova.");
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i data-lucide="wand-2" class="w-5 h-5"></i> Générer le Brouillon`;
