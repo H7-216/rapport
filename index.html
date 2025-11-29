@@ -127,7 +127,7 @@
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden transition-opacity backdrop-blur-sm"></div>
     
     <!-- Drawer -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white z-50 transform -translate-x-full transition-transform duration-300 ease-out md:relative md:translate-x-0 md:w-64 shadow-2xl flex flex-col h-full">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white z-50 transform -translate-x-full transition-transform duration-300 ease-out md:relative md:translate-x-0 md:w-64 shadow-2xl flex flex-col h-full invisible md:visible" ontransitionend="handleTransitionEnd(this)">
         
         <!-- Sidebar Header -->
         <div class="p-6 border-b border-slate-800 flex items-center justify-between">
@@ -274,11 +274,14 @@
                 <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
                     <!-- API Key Check -->
                     <div id="ai-setup" class="p-8 text-center space-y-6">
-                        <div class="bg-yellow-50 text-yellow-800 p-4 rounded-xl text-sm inline-block">
+                        <div class="bg-purple-50 text-purple-800 p-4 rounded-xl text-sm inline-block">
                             <i data-lucide="key" class="w-4 h-4 inline mr-2"></i>
-                            Clé OpenAI requise (stockée localement)
+                            Clé SambaNova requise (Gratuite)
                         </div>
-                        <input type="password" id="api-key-input" class="w-full max-w-sm mx-auto block text-center p-3 border border-slate-200 rounded-xl focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all" placeholder="sk-...">
+                        <div class="text-sm text-slate-500">
+                            Obtenez votre clé sur <a href="https://cloud.sambanova.ai/" target="_blank" class="text-brand-600 underline font-medium">cloud.sambanova.ai</a>
+                        </div>
+                        <input type="password" id="api-key-input" class="w-full max-w-sm mx-auto block text-center p-3 border border-slate-200 rounded-xl focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all" placeholder="Entrez votre clé API...">
                         <button onclick="saveKey()" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors">
                             Activer l'Assistant
                         </button>
@@ -333,7 +336,7 @@
                 sections: []
             },
             history: JSON.parse(localStorage.getItem('reports_v2') || '[]'),
-            apiKey: localStorage.getItem('openai_key') || '',
+            apiKey: localStorage.getItem('sambanova_key') || '',
             view: 'editor', // editor, chati, history
             mobileTab: 'edit' // edit, preview
         };
@@ -361,21 +364,37 @@
         function navigateTo(page) {
             app.view = page;
             // Close sidebar on mobile
-            if (window.innerWidth < 768) toggleSidebar();
+            if (window.innerWidth < 768) toggleSidebar(false); // Force close
             render();
         }
 
-        function toggleSidebar() {
+        function toggleSidebar(forceState) {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('sidebar-overlay');
-            const isOpen = !sb.classList.contains('-translate-x-full');
+            const isClosed = sb.classList.contains('-translate-x-full');
             
-            if (isOpen) {
-                sb.classList.add('-translate-x-full');
-                ov.classList.add('hidden');
+            const shouldOpen = forceState !== undefined ? forceState : isClosed;
+            
+            if (shouldOpen) {
+                sb.classList.remove('invisible'); // Make visible before sliding in
+                // Small delay to ensure display block is registered before transform
+                requestAnimationFrame(() => {
+                    sb.classList.remove('-translate-x-full');
+                    ov.classList.remove('hidden');
+                    ov.classList.remove('opacity-0');
+                });
             } else {
-                sb.classList.remove('-translate-x-full');
-                ov.classList.remove('hidden');
+                sb.classList.add('-translate-x-full');
+                ov.classList.add('opacity-0');
+                setTimeout(() => {
+                   ov.classList.add('hidden');
+                }, 300); // Wait for opacity fade
+            }
+        }
+        
+        function handleTransitionEnd(el) {
+            if (el.classList.contains('-translate-x-full') && window.innerWidth < 768) {
+                el.classList.add('invisible'); // Hide completely after slide out to prevent ghost clicks
             }
         }
 
@@ -681,7 +700,7 @@
             const setup = document.getElementById('ai-setup');
             const form = document.getElementById('ai-form');
             
-            if (app.apiKey.startsWith('sk-')) {
+            if (app.apiKey && app.apiKey.length > 5) {
                 setup.classList.add('hidden');
                 form.classList.remove('hidden');
             } else {
@@ -725,12 +744,12 @@
         // --- AI LOGIC ---
         function saveKey() {
             const k = document.getElementById('api-key-input').value.trim();
-            if (k.startsWith('sk-')) {
+            if (k.length > 5) {
                 app.apiKey = k;
-                localStorage.setItem('openai_key', k);
+                localStorage.setItem('sambanova_key', k);
                 renderChati();
             } else {
-                alert("Clé invalide (doit commencer par sk-)");
+                alert("Clé invalide (trop courte)");
             }
         }
 
@@ -746,14 +765,14 @@
             lucide.createIcons();
 
             try {
-                const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                const res = await fetch('https://api.sambanova.ai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${app.apiKey}`
                     },
                     body: JSON.stringify({
-                        model: "gpt-4o",
+                        model: "Meta-Llama-3.1-70B-Instruct",
                         messages: [
                             { role: "system", content: "Tu es un expert en rapports. Réponds UNIQUEMENT un JSON valide: { title, subject, sections: [{type: 'heading'|'paragraph', title?, content?}] }." },
                             { role: "user", content: `Sujet: ${topic}. Instructions: ${instr}` }
@@ -763,7 +782,10 @@
                 });
                 
                 const data = await res.json();
-                if (data.error) throw new Error(data.error.message);
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
                 
                 const json = JSON.parse(data.choices[0].message.content);
                 
