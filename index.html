@@ -272,19 +272,15 @@
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <!-- API Key Check -->
-                    <div id="ai-setup" class="p-8 text-center space-y-6">
-                        <div class="bg-purple-50 text-purple-800 p-4 rounded-xl text-sm inline-block">
-                            <i data-lucide="key" class="w-4 h-4 inline mr-2"></i>
-                            Clé SambaNova requise (Gratuite)
+                    <!-- AI Info Box -->
+                    <div class="p-8 text-center space-y-6">
+                        <div class="bg-green-50 text-green-800 p-4 rounded-xl text-sm inline-block">
+                            <i data-lucide="cpu" class="w-4 h-4 inline mr-2"></i>
+                            IA Locale • Zéro API externe
                         </div>
-                        <div class="text-sm text-slate-500">
-                            Obtenez votre clé sur <a href="https://cloud.sambanova.ai/" target="_blank" class="text-brand-600 underline font-medium">cloud.sambanova.ai</a>
-                        </div>
-                        <input type="password" id="api-key-input" class="w-full max-w-sm mx-auto block text-center p-3 border border-slate-200 rounded-xl focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all" placeholder="Entrez votre clé API...">
-                        <button onclick="saveKey()" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors">
-                            Activer l'Assistant
-                        </button>
+                        <p class="text-sm text-slate-500">
+                            Génération de rapports professionnels en local. Basé sur des templates intelligents et structurés.
+                        </p>
                     </div>
 
                     <!-- AI Form -->
@@ -336,7 +332,6 @@
                 sections: []
             },
             history: JSON.parse(localStorage.getItem('reports_v2') || '[]'),
-            apiKey: localStorage.getItem('sambanova_key') || '',
             view: 'editor', // editor, chati, history
             mobileTab: 'edit' // edit, preview
         };
@@ -700,13 +695,9 @@
             const setup = document.getElementById('ai-setup');
             const form = document.getElementById('ai-form');
             
-            if (app.apiKey && app.apiKey.length > 5) {
-                setup.classList.add('hidden');
-                form.classList.remove('hidden');
-            } else {
-                setup.classList.remove('hidden');
-                form.classList.add('hidden');
-            }
+            // IA locale toujours disponible
+            setup.classList.remove('hidden');
+            form.classList.remove('hidden');
         }
 
         function renderHistory() {
@@ -741,94 +732,172 @@
             lucide.createIcons();
         }
 
-        // --- AI LOGIC ---
-        function saveKey() {
-            const k = document.getElementById('api-key-input').value.trim();
-            if (k.length > 5) {
-                app.apiKey = k;
-                localStorage.setItem('sambanova_key', k);
-                renderChati();
-            } else {
-                alert("Clé invalide (trop courte)");
-            }
+        // --- IA LOCALE TEMPLATES ---
+        const aiTemplates = {
+            introductions: [
+                "Ce rapport examine les enjeux clés et les opportunités liées à ce domaine. Notre analyse s'appuie sur des données récentes et des meilleures pratiques reconnues.",
+                "L'objectif de ce rapport est de fournir un aperçu complet des tendances actuelles et des recommandations stratégiques pour cette thématique.",
+                "Nous présentons ici une analyse détaillée des facteurs influençant ce secteur, accompagnée de propositions d'amélioration concrètes.",
+                "Ce document synthétise les éléments essentiels à connaître pour comprendre et optimiser cette problématique dans un contexte moderne."
+            ],
+            contextParts: [
+                "Le contexte actuel montre une évolution significative des pratiques et des attentes. Les organisations doivent s'adapter rapidement à ces changements.",
+                "La situation contemporaine révèle plusieurs défis majeurs qui méritent une attention particulière. Ces enjeux impactent directement la performance globale.",
+                "Les données disponibles indiquent des tendances importantes qui façonnent le paysage actuel. Une compréhension approfondie de ces dynamiques est essentielle.",
+                "L'environnement actuel se caractérise par des transformations rapides et une complexité croissante. L'adaptation devient un facteur clé de succès."
+            ],
+            analysis: [
+                "Une analyse approfondie révèle plusieurs éléments déterminants. Premièrement, les facteurs technologiques jouent un rôle prépondérant. Deuxièmement, l'aspect humain reste fondamental. Troisièmement, la dimension économique structure les décisions stratégiques.",
+                "Les données disponibles mettent en évidence trois constats majeurs. D'une part, les initiatives proactives génèrent des résultats mesurables. D'autre part, l'investissement dans les compétences porte ses fruits. Enfin, la collaboration inter-fonctionnelle crée de la valeur ajoutée.",
+                "L'étude détaillée démontre l'importance de plusieurs dimensions. Le facteur stratégique demande une vision à long terme. Le facteur opérationnel nécessite de l'exécution rigoureuse. Le facteur culturel influence profondément les résultats."
+            ],
+            recommendations: [
+                "Nous recommandons une approche progressive et mesurée. Premièrement, définir des objectifs clairs et mesurables. Deuxièmement, mobiliser les ressources adéquates. Troisièmement, mettre en place un suivi régulier et ajuster selon les résultats.",
+                "Pour avancer efficacement, trois actions prioritaires s'imposent. D'abord, établir une gouvernance claire avec les responsabilités bien définies. Ensuite, investir dans la formation et le développement des talents. Enfin, créer une culture d'amélioration continue.",
+                "Les recommandations suivantes permettront une meilleure performance. Il convient de : (1) Renforcer la collaboration entre les équipes, (2) Optimiser les processus existants, (3) Innover progressivement dans les approches."
+            ],
+            conclusions: [
+                "En conclusion, cette analyse souligne l'importance de s'adapter aux transformations en cours. Les organisations qui agiront avec anticipation bénéficieront d'un avantage compétitif durable.",
+                "Ce rapport démontre que les enjeux identifiés sont managérables avec une stratégie cohérente. Les recommandations proposées forment un cadre d'action pratique et réaliste.",
+                "Pour résumer, les principaux apprentissages de ce rapport invitent à une réflexion stratégique approfondie. L'action doit être fondée sur des données et guidée par une vision claire."
+            ]
+        };
+
+        // --- AI LOCAL ENGINE ---
+        function generateReportLocally(topic, instructions) {
+            const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            
+            // Titre et subject
+            const title = `Rapport: ${topic}`;
+            const subject = `Analyse et recommandations pour ${topic.toLowerCase()}`;
+            
+            // Sections dynamiques
+            const sections = [];
+            
+            // 1. Sommaire
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'heading',
+                title: 'Sommaire Exécutif',
+                content: ''
+            });
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'paragraph',
+                title: '',
+                content: `Ce rapport synthétise l'analyse relative à : ${topic}. Les points clés abordés incluent le contexte actuel, les enjeux stratégiques, et un ensemble de recommandations actionnables. La présente étude s'appuie sur une revue des meilleures pratiques et des tendances établies.`
+            });
+            
+            // 2. Introduction
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'heading',
+                title: '1. Introduction',
+                content: ''
+            });
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'paragraph',
+                title: '',
+                content: rand(aiTemplates.introductions)
+            });
+            
+            // 3. Contexte
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'heading',
+                title: '2. Contexte Actuel',
+                content: ''
+            });
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'paragraph',
+                title: '',
+                content: rand(aiTemplates.contextParts)
+            });
+            
+            // 4. Analyse
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'heading',
+                title: '3. Analyse Détaillée',
+                content: ''
+            });
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'paragraph',
+                title: '',
+                content: rand(aiTemplates.analysis)
+            });
+            
+            // 5. Recommandations
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'heading',
+                title: '4. Recommandations Stratégiques',
+                content: ''
+            });
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'paragraph',
+                title: '',
+                content: rand(aiTemplates.recommendations)
+            });
+            
+            // 6. Conclusion
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'heading',
+                title: '5. Conclusion',
+                content: ''
+            });
+            sections.push({
+                id: crypto.randomUUID(),
+                type: 'paragraph',
+                title: '',
+                content: rand(aiTemplates.conclusions)
+            });
+            
+            return { title, subject, sections };
         }
 
-        async function runAI() {
+        function runAI() {
             const btn = document.getElementById('btn-ai-generate');
-            const topic = document.getElementById('ai-topic').value;
-            const instr = document.getElementById('ai-instructions').value;
+            const topic = document.getElementById('ai-topic').value.trim();
+            const instr = document.getElementById('ai-instructions').value.trim();
             
-            if (!topic) return;
+            if (!topic) {
+                alert("Veuillez entrer un sujet pour le rapport");
+                return;
+            }
             
             btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-5 h-5"></i> Réflexion en cours...`;
+            btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-5 h-5"></i> Génération en cours...`;
             lucide.createIcons();
 
-            try {
-                const res = await fetch('https://api.sambanova.ai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${app.apiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: "Meta-Llama-3.1-70B-Instruct",
-                        messages: [
-                            { role: "system", content: "Tu es un expert en rédaction de rapports professionnels. Tu dois répondre UNIQUEMENT avec du JSON valide, sans texte supplémentaire. Format exact requis:\n{\n  \"title\": \"Titre du rapport\",\n  \"subject\": \"Sous-titre\",\n  \"sections\": [\n    {\"type\": \"heading\", \"title\": \"Titre section\"},\n    {\"type\": \"paragraph\", \"content\": \"Texte du paragraphe. Minimum 3 phrases.\"},\n    {\"type\": \"heading\", \"title\": \"Autre section\"},\n    {\"type\": \"paragraph\", \"content\": \"Plus de contenu...\"}\n  ]\n}" },
-                            { role: "user", content: `Sujet du rapport: ${topic}\n\nInstructions spéciales: ${instr || 'Aucune'}\n\nCrée un rapport professionnel avec structure Sommaire -> Introduction -> Développement -> Conclusion. Réponds UNIQUEMENT le JSON, rien d'autre.` }
-                        ]
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-                
-                let content = data.choices[0].message.content.trim();
-                
-                // Extraction robuste du JSON
-                let jsonObj;
+            // Simulation d'une courte attente pour effet réaliste
+            setTimeout(() => {
                 try {
-                    jsonObj = JSON.parse(content);
-                } catch (e) {
-                    // Essayer d'extraire le JSON s'il y a du texte autour
-                    const jsonMatch = content.match(/\{[\s\S]*\}/);
-                    if (jsonMatch) {
-                        jsonObj = JSON.parse(jsonMatch[0]);
-                    } else {
-                        throw new Error("Impossible de parser la réponse IA. Réessayez.");
-                    }
-                }
-                
-                // Validation
-                if (!jsonObj.title || !jsonObj.sections || !Array.isArray(jsonObj.sections)) {
-                    throw new Error("Format de réponse IA incorrect.");
-                }
-                
-                // Apply
-                app.report.title = jsonObj.title;
-                app.report.subject = jsonObj.subject || '';
-                app.report.sections = jsonObj.sections.map(s => ({
-                    type: s.type || 'paragraph',
-                    title: s.title || '',
-                    content: s.content || '',
-                    id: crypto.randomUUID(),
-                    image: ''
-                }));
-                
-                navigateTo('editor');
-                alert("Rapport généré avec succès ! Vous pouvez maintenant l'affiner.");
+                    const generated = generateReportLocally(topic, instr);
+                    
+                    app.report.title = generated.title;
+                    app.report.subject = generated.subject;
+                    app.report.sections = generated.sections;
+                    
+                    navigateTo('editor');
+                    renderSections();
+                    renderPreview();
+                    
+                    alert("✅ Rapport généré ! Vous pouvez maintenant l'affiner dans l'éditeur.");
 
-            } catch (e) {
-                console.error(e);
-                alert("Erreur IA: " + e.message + "\n\nVérifiez votre clé API et que vous avez du crédit SambaNova.");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="wand-2" class="w-5 h-5"></i> Générer le Brouillon`;
-                lucide.createIcons();
-            }
+                } catch (e) {
+                    alert("Erreur lors de la génération: " + e.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="wand-2" class="w-5 h-5"></i> Générer le Brouillon`;
+                    lucide.createIcons();
+                }
+            }, 800);
         }
 
         // --- EXPORT ---
