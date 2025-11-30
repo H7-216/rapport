@@ -732,136 +732,8 @@
             lucide.createIcons();
         }
 
-        // --- IA LOCALE TEMPLATES ---
-        const aiTemplates = {
-            introductions: [
-                "Ce rapport examine les enjeux clés et les opportunités liées à ce domaine. Notre analyse s'appuie sur des données récentes et des meilleures pratiques reconnues.",
-                "L'objectif de ce rapport est de fournir un aperçu complet des tendances actuelles et des recommandations stratégiques pour cette thématique.",
-                "Nous présentons ici une analyse détaillée des facteurs influençant ce secteur, accompagnée de propositions d'amélioration concrètes.",
-                "Ce document synthétise les éléments essentiels à connaître pour comprendre et optimiser cette problématique dans un contexte moderne."
-            ],
-            contextParts: [
-                "Le contexte actuel montre une évolution significative des pratiques et des attentes. Les organisations doivent s'adapter rapidement à ces changements.",
-                "La situation contemporaine révèle plusieurs défis majeurs qui méritent une attention particulière. Ces enjeux impactent directement la performance globale.",
-                "Les données disponibles indiquent des tendances importantes qui façonnent le paysage actuel. Une compréhension approfondie de ces dynamiques est essentielle.",
-                "L'environnement actuel se caractérise par des transformations rapides et une complexité croissante. L'adaptation devient un facteur clé de succès."
-            ],
-            analysis: [
-                "Une analyse approfondie révèle plusieurs éléments déterminants. Premièrement, les facteurs technologiques jouent un rôle prépondérant. Deuxièmement, l'aspect humain reste fondamental. Troisièmement, la dimension économique structure les décisions stratégiques.",
-                "Les données disponibles mettent en évidence trois constats majeurs. D'une part, les initiatives proactives génèrent des résultats mesurables. D'autre part, l'investissement dans les compétences porte ses fruits. Enfin, la collaboration inter-fonctionnelle crée de la valeur ajoutée.",
-                "L'étude détaillée démontre l'importance de plusieurs dimensions. Le facteur stratégique demande une vision à long terme. Le facteur opérationnel nécessite de l'exécution rigoureuse. Le facteur culturel influence profondément les résultats."
-            ],
-            recommendations: [
-                "Nous recommandons une approche progressive et mesurée. Premièrement, définir des objectifs clairs et mesurables. Deuxièmement, mobiliser les ressources adéquates. Troisièmement, mettre en place un suivi régulier et ajuster selon les résultats.",
-                "Pour avancer efficacement, trois actions prioritaires s'imposent. D'abord, établir une gouvernance claire avec les responsabilités bien définies. Ensuite, investir dans la formation et le développement des talents. Enfin, créer une culture d'amélioration continue.",
-                "Les recommandations suivantes permettront une meilleure performance. Il convient de : (1) Renforcer la collaboration entre les équipes, (2) Optimiser les processus existants, (3) Innover progressivement dans les approches."
-            ],
-            conclusions: [
-                "En conclusion, cette analyse souligne l'importance de s'adapter aux transformations en cours. Les organisations qui agiront avec anticipation bénéficieront d'un avantage compétitif durable.",
-                "Ce rapport démontre que les enjeux identifiés sont managérables avec une stratégie cohérente. Les recommandations proposées forment un cadre d'action pratique et réaliste.",
-                "Pour résumer, les principaux apprentissages de ce rapport invitent à une réflexion stratégique approfondie. L'action doit être fondée sur des données et guidée par une vision claire."
-            ]
-        };
-
-        // --- AI LOCAL ENGINE ---
-        function generateReportLocally(topic, instructions) {
-            const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
-            
-            // Titre et subject
-            const title = `Rapport: ${topic}`;
-            const subject = `Analyse et recommandations pour ${topic.toLowerCase()}`;
-            
-            // Sections dynamiques
-            const sections = [];
-            
-            // 1. Sommaire
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'heading',
-                title: 'Sommaire Exécutif',
-                content: ''
-            });
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'paragraph',
-                title: '',
-                content: `Ce rapport synthétise l'analyse relative à : ${topic}. Les points clés abordés incluent le contexte actuel, les enjeux stratégiques, et un ensemble de recommandations actionnables. La présente étude s'appuie sur une revue des meilleures pratiques et des tendances établies.`
-            });
-            
-            // 2. Introduction
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'heading',
-                title: '1. Introduction',
-                content: ''
-            });
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'paragraph',
-                title: '',
-                content: rand(aiTemplates.introductions)
-            });
-            
-            // 3. Contexte
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'heading',
-                title: '2. Contexte Actuel',
-                content: ''
-            });
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'paragraph',
-                title: '',
-                content: rand(aiTemplates.contextParts)
-            });
-            
-            // 4. Analyse
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'heading',
-                title: '3. Analyse Détaillée',
-                content: ''
-            });
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'paragraph',
-                title: '',
-                content: rand(aiTemplates.analysis)
-            });
-            
-            // 5. Recommandations
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'heading',
-                title: '4. Recommandations Stratégiques',
-                content: ''
-            });
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'paragraph',
-                title: '',
-                content: rand(aiTemplates.recommendations)
-            });
-            
-            // 6. Conclusion
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'heading',
-                title: '5. Conclusion',
-                content: ''
-            });
-            sections.push({
-                id: crypto.randomUUID(),
-                type: 'paragraph',
-                title: '',
-                content: rand(aiTemplates.conclusions)
-            });
-            
-            return { title, subject, sections };
-        }
-
-        function runAI() {
+        // --- AI PYTHON ENGINE ---
+        async function runAI() {
             const btn = document.getElementById('btn-ai-generate');
             const topic = document.getElementById('ai-topic').value.trim();
             const instr = document.getElementById('ai-instructions').value.trim();
@@ -872,32 +744,41 @@
             }
             
             btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-5 h-5"></i> Génération en cours...`;
+            btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-5 h-5"></i> IA Python en cours...`;
             lucide.createIcons();
 
-            // Simulation d'une courte attente pour effet réaliste
-            setTimeout(() => {
-                try {
-                    const generated = generateReportLocally(topic, instr);
-                    
-                    app.report.title = generated.title;
-                    app.report.subject = generated.subject;
-                    app.report.sections = generated.sections;
-                    
-                    navigateTo('editor');
-                    renderSections();
-                    renderPreview();
-                    
-                    alert("✅ Rapport généré ! Vous pouvez maintenant l'affiner dans l'éditeur.");
+            try {
+                const res = await fetch('/api/ai/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic, instructions: instr })
+                });
 
-                } catch (e) {
-                    alert("Erreur lors de la génération: " + e.message);
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = `<i data-lucide="wand-2" class="w-5 h-5"></i> Générer le Brouillon`;
-                    lucide.createIcons();
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Erreur API');
                 }
-            }, 800);
+
+                const generated = await res.json();
+                
+                app.report.title = generated.title;
+                app.report.subject = generated.subject;
+                app.report.sections = generated.sections;
+                
+                navigateTo('editor');
+                renderSections();
+                renderPreview();
+                
+                alert("✅ Rapport généré par l'IA Python ! Affinez-le dans l'éditeur.");
+
+            } catch (e) {
+                console.error('AI Error:', e);
+                alert("Erreur: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="wand-2" class="w-5 h-5"></i> Générer le Brouillon`;
+                lucide.createIcons();
+            }
         }
 
         // --- EXPORT ---
