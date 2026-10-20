@@ -1,823 +1,2232 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Générateur de Rapports Pro</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Playfair Display', 'serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            900: '#1e3a8a',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        /* Base & Reset */
-        body {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* A4 Paper Effect */
-        .a4-page {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 20mm;
-            margin: 0 auto;
-            background: white;
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.15);
-            position: relative;
-            transform-origin: top center;
-        }
-
-        /* Utilities */
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        /* Mobile Tabs Animation */
-        .tab-active {
-            color: #2563eb;
-            border-bottom-color: #2563eb;
-        }
-        .tab-inactive {
-            color: #64748b;
-            border-bottom-color: transparent;
-        }
-
-        /* Transitions */
-        .fade-in {
-            animation: fadeIn 0.2s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Print Overrides */
-        @media print {
-            body * { visibility: hidden; }
-            #report-preview-container, #report-preview-container * { visibility: visible; }
-            #report-preview-container {
-                position: absolute;
-                left: 0; top: 0;
-                width: 100%; margin: 0; padding: 0;
-                transform: none !important;
-                box-shadow: none;
-            }
-            @page { size: A4; margin: 0; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#15171c">
+<title>Rapport Pro</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f5be6'/%3E%3Cpath d='M20 14h17l9 9v27a3 3 0 0 1-3 3H20a3 3 0 0 1-3-3V17a3 3 0 0 1 3-3z' fill='%23fff'/%3E%3Cpath d='M24 32h16M24 39h16M24 46h10' stroke='%232f5be6' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#f3f1ec; --panel:#ffffff; --ink:#15171c; --ink-2:#20232a; --ink-3:#2b2f38;
+--line:#e5e2db; --line-2:#d6d2c8; --text:#1d2026; --muted:#6a6e77; --faint:#9a9ea6;
+--accent:#2f5be6; --accent-2:#2347c2; --accent-soft:#eaeffd;
+--ai:#7a4cf3; --ai-2:#6237dc; --ai-soft:#f2edfe;
+--ok:#1b9460; --ok-soft:#e5f5ed; --warn:#b86e0a; --warn-soft:#fdf3e2; --err:#cf3434; --err-soft:#fdeaea;
+--r:12px; --r-sm:8px;
+--shadow:0 1px 2px rgba(20,22,28,.05),0 6px 20px rgba(20,22,28,.06);
+--shadow-lg:0 2px 6px rgba(20,22,28,.08),0 18px 48px rgba(20,22,28,.16);
+--font-ui:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--font-ui);font-size:14px;line-height:1.45;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button:disabled{cursor:not-allowed;opacity:.45}
+input,textarea,select{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.ic{width:18px;height:18px;flex:none;display:inline-block;vertical-align:middle}
+.sm .ic,.ic.sm{width:15px;height:15px}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+::selection{background:#cdd9ff}
+/* ---------- Layout ---------- /
+.app{display:grid;grid-template-columns:244px minmax(0,1fr);height:100dvh}
+.sidebar{background:var(--ink);color:#e9eaee;display:flex;flex-direction:column;min-height:0;z-index:50}
+.brand{display:flex;align-items:center;gap:10px;padding:20px 20px 18px}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#3d6bff,#2a4fd6);display:grid;place-items:center;box-shadow:0 4px 14px rgba(47,91,230,.35)}
+.brand-mark .ic{color:#fff}
+.brand b{font-size:16px;letter-spacing:-.01em}
+.brand small{display:block;color:#8d919b;font-size:11.5px;font-weight:500}
+.nav{padding:8px 12px;display:flex;flex-direction:column;gap:4px;flex:1;overflow:auto}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#a9adb7;text-align:left;transition:background .15s,color .15s}
+.nav-item:hover{background:#1f2229;color:#fff}
+.nav-item.active{background:#262a33;color:#fff}
+.nav-item.active .ic{color:#7d9bff}
+.nav-item .ic.ai-ic{color:#b59bff}
+.nav-item span b{display:block;font-weight:600;font-size:13.5px}
+.nav-item span small{display:block;font-size:11.5px;color:#7d818b}
+.side-foot{padding:14px 18px;border-top:1px solid #23262e;font-size:11.5px;color:#7d818b;display:flex;flex-direction:column;gap:6px}
+.meter{height:4px;border-radius:4px;background:#262a33;overflow:hidden}
+.meter i{display:block;height:100%;background:#4f74f0;width:0}
+.engine-pill{display:inline-flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;background:#666;display:inline-block}
+.dot.ok{background:#35c47f}.dot.warn{background:#e8a33a}.dot.off{background:#6b6f78}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.topbar{height:58px;flex:none;display:flex;align-items:center;gap:12px;padding:0 18px;background:rgba(255,255,255,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:20}
+.topbar .menu-btn{display:none}
+.doc-name{min-width:0;display:flex;flex-direction:column}
+.doc-name b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44vw}
+.save-state{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.save-state .ic{width:12px;height:12px}
+.save-state.saved{color:var(--ok)}.save-state.error{color:var(--err)}
+.grow{flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;padding:0 14px;border-radius:9px;font-weight:600;font-size:13px;white-space:nowrap;transition:background .15s,border-color .15s,box-shadow .15s,transform .05s}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn .ic{width:16px;height:16px}
+.btn-ghost{color:var(--ink-3)}.btn-ghost:hover{background:#efede8}
+.btn-line{border:1px solid var(--line-2);background:#fff}.btn-line:hover{border-color:#bdb8ad;background:#fbfaf8}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 1px 2px rgba(47,91,230,.3)}.btn-primary:hover{background:var(--accent-2)}
+.btn-ai{background:linear-gradient(135deg,#7a4cf3,#4e6cf5);color:#fff;box-shadow:0 4px 16px rgba(122,76,243,.28)}.btn-ai:hover{filter:brightness(1.06)}
+.btn-lg{height:48px;font-size:15px;border-radius:11px;padding:0 20px}
+.btn-sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:7px}
+.btn-danger{color:var(--err)}.btn-danger:hover{background:var(--err-soft)}
+.ai-chip{display:flex;align-items:center;gap:8px;height:34px;padding:0 6px 0 12px;border-radius:999px;background:var(--ai-soft);color:var(--ai-2);font-size:12.5px;font-weight:600;animation:rise .2s}
+.ai-chip button{height:24px;padding:0 10px;border-radius:999px;background:#fff;color:var(--ai-2);font-size:12px;font-weight:600}
+.ai-chip button:hover{background:#ece4ff}
+.ai-chip .ic{width:15px;height:15px}
+#ai-chip-text{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.views{flex:1;min-height:0;position:relative}
+.view{position:absolute;inset:0;display:flex;min-height:0}
+/* ---------- Editor ---------- /
+.editor{display:grid;grid-template-columns:minmax(360px,470px) minmax(0,1fr);width:100%;min-height:0}
+.edit-pane{background:#fbfaf7;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0}
+.edit-scroll{flex:1;overflow:auto;padding:18px 18px 8px;display:flex;flex-direction:column;gap:14px}
+.mob-tabs{display:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 1px 2px rgba(20,22,28,.03)}
+.card-h{display:flex;align-items:center;gap:8px;padding:12px 14px 0;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card-h .ic{width:15px;height:15px}
+.card-b{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.collapse-btn{margin-left:auto;color:var(--faint);display:flex}
+.collapse-btn .ic{transition:transform .2s}
+.card.closed .card-b{display:none}
+.card.closed .collapse-btn .ic{transform:rotate(-90deg)}
+.field{display:flex;flex-direction:column;gap:5px}
+.field>span{font-size:12px;font-weight:600;color:var(--muted)}
+.row{display:flex;gap:10px}
+.row>{flex:1;min-width:0}
+.txt{width:100%;min-width:0;height:38px;border:1px solid var(--line);border-radius:var(--r-sm);padding:0 11px;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
+textarea.txt{height:auto;padding:10px 11px;resize:vertical;line-height:1.5}
+.txt:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.txt.title-in{height:44px;font-size:17px;font-weight:700}
+.txt.sm{height:32px;font-size:13px}
+select.txt{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236a6e77' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:28px;height:28px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line-2);transition:transform .1s}
+.sw:hover{transform:scale(1.08)}
+.sw.on{box-shadow:0 0 0 2px var(--text)}
+.seg{display:flex;background:#f0eee9;border-radius:9px;padding:3px;gap:2px}
+.seg button{flex:1;height:30px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.toggles{display:flex;flex-wrap:wrap;gap:8px}
+.tog{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 8px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:600;color:var(--muted);background:#fff;user-select:none}
+.tog i{width:26px;height:16px;border-radius:9px;background:#dcd8cf;position:relative;transition:background .15s}
+.tog i::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.tog.on{color:var(--text);border-color:#c9d4fb}
+.tog.on i{background:var(--accent)}
+.tog.on i::after{transform:translateX(10px)}
+.list-title{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 0}
+.list-title b{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;gap:8px;align-items:center}
+.list-title b .ic{width:15px;height:15px}
+.list-title small{color:var(--faint);font-size:12px}
+#sections{display:flex;flex-direction:column;gap:10px;padding-bottom:6px}
+.sec{background:#fff;border:1px solid var(--line);border-radius:11px;transition:border-color .15s,box-shadow .15s,opacity .15s;animation:rise .18s ease-out}
+.sec:focus-within{border-color:#b7c6f7;box-shadow:0 0 0 3px #eef2fe}
+.sec.dragging{opacity:.4}
+.sec.drop-before{box-shadow:0 -3px 0 0 var(--accent)}
+.sec.drop-after{box-shadow:0 3px 0 0 var(--accent)}
+.sec.streaming{border-color:#cdbcfb;box-shadow:0 0 0 3px var(--ai-soft)}
+.sec-head{display:flex;align-items:center;gap:2px;padding:6px 6px 6px 4px}
+.grip{color:#c3bfb5;cursor:grab;padding:4px;display:flex;border-radius:6px}
+.grip:hover{color:var(--muted);background:#f3f1ec}
+.grip .ic{width:16px;height:16px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:3px 8px;border-radius:6px;background:#f4f2ee}
+.pill .ic{width:13px;height:13px}
+.t-h1 .pill{color:#2346c0;background:#ebf0fe}.t-h2 .pill{color:#3b5ab8;background:#f0f3fd}
+.t-p .pill{color:#4d525c}.t-img .pill{color:#0e7a6b;background:#e6f5f2}
+.t-quote .pill{color:#a1600b;background:#fdf3e2}.t-pb .pill{color:#6b6f78}
+.sec-head .sp{flex:1}
+.ib{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;color:#8b8f98}
+.ib:hover:not(:disabled){background:#f2f0eb;color:var(--text)}
+.ib .ic{width:16px;height:16px}
+.ib.ai{color:var(--ai)}.ib.ai:hover{background:var(--ai-soft);color:var(--ai-2)}
+.ib.del:hover{background:var(--err-soft);color:var(--err)}
+.sec-body{padding:0 12px 12px}
+.sec-in{width:100%;border:0;outline:none;background:transparent;padding:4px 2px;border-bottom:1px dashed transparent}
+.sec-in:focus{border-bottom-color:var(--line-2)}
+.sec-in.h1{font-size:17px;font-weight:700}
+.sec-in.h2{font-size:15px;font-weight:600}
+.sec-ta{width:100%;border:0;outline:none;resize:none;background:#faf9f6;border-radius:8px;padding:10px 11px;line-height:1.6;min-height:84px;font-size:13.5px;display:block}
+.sec-ta:focus{background:#f6f5f1}
+.t-quote .sec-ta{background:#fffaf1;border-left:3px solid #e8b35c;border-radius:0 8px 8px 0}
+.sec-ta[readonly]{color:#4a4458}
+.img-row{display:flex;gap:12px;align-items:flex-start}
+.img-drop{width:108px;height:84px;flex:none;border:1.5px dashed var(--line-2);border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--faint);font-size:11px;font-weight:600;cursor:pointer;overflow:hidden;background:#faf9f6;text-align:center;transition:border-color .15s,background .15s}
+.img-drop:hover,.img-drop.over{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.img-drop.has{border-style:solid;padding:0}
+.img-drop img{width:100%;height:100%;object-fit:cover}
+.img-opts{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}
+.range{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:600}
+.range input{flex:1;accent-color:var(--accent)}
+.range b{width:38px;text-align:right;color:var(--text)}
+.pb-line{display:flex;align-items:center;gap:10px;color:var(--faint);font-size:12px;font-weight:600}
+.pb-line::before,.pb-line::after{content:'';flex:1;border-top:2px dashed var(--line-2)}
+.empty{border:1.5px dashed var(--line-2);border-radius:12px;padding:26px 18px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px;background:#fff}
+.empty b{color:var(--text);font-size:14.5px}
+.empty p{margin:0;font-size:13px;max-width:300px}
+.addbar{flex:none;border-top:1px solid var(--line);background:#fff;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:6px;overflow-x:auto}
+.addbar>span{font-size:11.5px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-right:4px;white-space:nowrap}
+.add-btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:8px;background:#f4f2ee;font-size:12.5px;font-weight:600;color:var(--ink-3);white-space:nowrap}
+.add-btn:hover{background:#ebe8e1}
+.add-btn .ic{width:15px;height:15px}
+.preview-pane{display:flex;flex-direction:column;min-width:0;min-height:0;background:#e9e6df}
+.pv-bar{flex:none;height:46px;display:flex;align-items:center;gap:6px;padding:0 14px;border-bottom:1px solid #dcd8cf;background:#efece6;font-size:12.5px;color:var(--muted)}
+.pv-bar .ib{width:30px;height:30px}
+.pv-bar .zoom-val{min-width:44px;text-align:center;font-weight:600;color:var(--text)}
+.pv-stats{display:flex;gap:14px;margin-left:auto}
+.pv-stats b{color:var(--text);font-weight:600}
+.stage{flex:1;overflow:auto;padding:28px 24px 60px}
+.zoomer{width:210mm;margin:0 auto;transform-origin:top center}
+/* ---------- Document (aperçu, impression, PDF) ---------- /
+.doc{--doc-accent:#2448c8;--doc-accent-soft:#f2f4fc;--doc-accent-line:#c8d1f1;--df-body:'Source Serif 4',Georgia,'Times New Roman',serif;--df-head:'Source Serif 4',Georgia,serif;color:#1f2329;font-family:var(--df-body);font-size:11pt;line-height:1.62}
+.doc.f-modern{--df-body:'Inter',system-ui,Arial,sans-serif;--df-head:'Inter',system-ui,Arial,sans-serif;font-size:10.5pt}
+.doc.f-elegant{--df-body:'Inter',system-ui,Arial,sans-serif;--df-head:'Playfair Display',Georgia,serif;font-size:10.5pt}
+.sheet{width:210mm;min-height:297mm;padding:22mm 20mm 24mm;background:#fff;margin:0 auto 26px;position:relative;box-shadow:0 1px 3px rgba(0,0,0,.08),0 12px 36px rgba(30,25,15,.13);overflow:hidden}
+.sheet-foot{position:absolute;left:20mm;right:20mm;bottom:10mm;display:flex;justify-content:space-between;font-family:'Inter',system-ui,sans-serif;font-size:7.5pt;color:#a3a6ad;border-top:1px solid #eee;padding-top:3mm}
+.doc h1,.doc h2,.doc h3,.doc h4{font-family:var(--df-head);color:#16181d;margin:0;line-height:1.25}
+.d-head{border-bottom:2px solid var(--doc-accent);padding-bottom:7mm;margin-bottom:9mm}
+.d-org{font-family:'Inter',system-ui,sans-serif;font-size:8.5pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--doc-accent);margin-bottom:4mm}
+.d-title{font-size:25pt;font-weight:700;letter-spacing:-.01em}
+.d-sub{font-size:13pt;color:#5d626b;margin-top:2.5mm;font-weight:400;font-family:var(--df-body)}
+.d-meta{font-family:'Inter',system-ui,sans-serif;font-size:9pt;color:#7b7f88;margin-top:5mm;display:flex;gap:10px;flex-wrap:wrap}
+.d-meta span+span::before{content:'•';margin-right:10px;color:#c5c8ce}
+.cover{padding:0;display:flex;flex-direction:column;height:297mm}
+.cover-band{height:16mm;background:var(--doc-accent);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.cover-in{flex:1;display:flex;flex-direction:column;padding:34mm 24mm 24mm}
+.cover .d-org{font-size:9.5pt;margin-bottom:0}
+.cover-mid{margin-top:auto;margin-bottom:auto}
+.cover .d-title{font-size:34pt;line-height:1.12}
+.cover .d-sub{font-size:15pt;margin-top:5mm}
+.cover-rule{width:38mm;height:2.2mm;background:var(--doc-accent);margin-top:10mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.cover-foot{font-family:'Inter',system-ui,sans-serif;font-size:10.5pt;color:#40444c;display:flex;justify-content:space-between;align-items:flex-end;gap:10mm;border-top:1px solid #e3e3e3;padding-top:6mm}
+.cover-foot b{display:block;font-size:11.5pt;color:#16181d}
+.cover-foot small{display:block;color:#8a8e96;font-size:9pt;margin-bottom:1mm}
+.d-toc{background:#f6f6f4;border-radius:2mm;padding:6mm 8mm;margin-bottom:10mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.d-toc h4{font-size:13pt;margin-bottom:3.5mm;padding-bottom:2.5mm;border-bottom:1px solid #e0e0dc}
+.d-toc ol{list-style:none;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif;font-size:9.5pt}
+.d-toc li{display:flex;align-items:baseline;gap:2mm;padding:1.1mm 0;color:#2c3038}
+.d-toc li.l2{padding-left:7mm;color:#5a5f68;font-size:9pt}
+.d-toc li .n{color:var(--doc-accent);font-weight:600;min-width:7mm}
+.d-toc li.l2 .n{min-width:9mm;font-weight:500}
+.d-toc li .lead{flex:1;border-bottom:1px dotted #c8c8c4;transform:translateY(-1mm)}
+.d-h1{font-size:16.5pt;font-weight:700;color:var(--doc-accent)!important;margin:9mm 0 4mm!important;padding-bottom:2mm;border-bottom:1.2px solid var(--doc-accent-line)}
+.d-h1:first-child{margin-top:0!important}
+.d-h2{font-size:12.8pt;font-weight:700;margin:6mm 0 2.5mm!important}
+.d-num{color:var(--doc-accent);margin-right:2.5mm}
+.d-h2 .d-num{opacity:.85}
+.doc p{margin:0 0 3mm;text-align:justify;hyphens:auto;-webkit-hyphens:auto}
+.d-p ul,.d-p ol,.d-quote ul,.d-quote ol{margin:0 0 3mm;padding-left:7mm}
+.doc li{margin:.6mm 0}
+.doc ul li::marker{color:var(--doc-accent)}
+.doc strong{font-weight:700;color:#121418}
+.d-quote{margin:4mm 0;padding:3.5mm 5mm;border-left:1.2mm solid var(--doc-accent);background:var(--doc-accent-soft);border-radius:0 1.5mm 1.5mm 0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.d-quote p:last-child,.d-quote ul:last-child{margin-bottom:0}
+.d-fig{margin:6mm 0;text-align:center}
+.d-fig img{max-width:100%;max-height:150mm;object-fit:contain;border-radius:1mm}
+.d-fig figcaption{font-family:'Inter',system-ui,sans-serif;font-size:8.5pt;color:#7b7f88;margin-top:2mm;font-style:italic}
+.d-ghost{color:#b6b9bf!important;font-style:italic;font-family:'Inter',system-ui,sans-serif;font-size:9.5pt}
+.d-ghost-img{border:1.5px dashed #d8d8d4;border-radius:2mm;padding:12mm;color:#b6b9bf;font-family:'Inter',sans-serif;font-size:9pt;text-align:center;margin:5mm 0}
+.d-stream{background:linear-gradient(90deg,transparent,#f3eeff,transparent);background-size:200% 100%;animation:shimmer 1.6s linear infinite}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+/* ---------- Chati IA ---------- /
+.ai-view{overflow:auto;width:100%}
+.ai-wrap{max-width:1120px;margin:0 auto;padding:30px 24px 80px;display:flex;flex-direction:column;gap:18px}
+.ai-hero{display:flex;align-items:center;gap:16px}
+.ai-logo{width:52px;height:52px;border-radius:15px;background:linear-gradient(135deg,#7a4cf3,#4e6cf5);display:grid;place-items:center;box-shadow:0 8px 24px rgba(122,76,243,.3);flex:none}
+.ai-logo .ic{color:#fff;width:26px;height:26px}
+.ai-hero h1{margin:0;font-size:26px;letter-spacing:-.02em}
+.ai-hero p{margin:3px 0 0;color:var(--muted)}
+.ai-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+.ai-col{display:flex;flex-direction:column;gap:18px;min-width:0}
+.ai-form .card-b{gap:14px;padding:16px 18px 18px}
+.topic-in{height:50px;font-size:16px;font-weight:500}
+.engines{display:flex;flex-direction:column;gap:8px}
+.eng{border:1.5px solid var(--line);border-radius:11px;background:#fff;transition:border-color .15s,background .15s}
+.eng.on{border-color:#b8a4f8;background:#fdfcff}
+.eng-h{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;text-align:left}
+.eng-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:#f3f1ec;color:var(--ink-3);flex:none}
+.eng.on .eng-ic{background:var(--ai-soft);color:var(--ai-2)}
+.eng-h .eng-t{flex:1;min-width:0}
+.eng-h b{display:block;font-size:13.5px}
+.eng-h small{display:block;color:var(--muted);font-size:12px}
+.radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--line-2);flex:none;position:relative}
+.eng.on .radio{border-color:var(--ai)}
+.eng.on .radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--ai)}
+.eng-b{padding:0 14px 14px;display:none;flex-direction:column;gap:10px}
+.eng.on .eng-b{display:flex}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#f0eee9;color:var(--muted);vertical-align:middle}
+.badge.ok{background:var(--ok-soft);color:var(--ok)}.badge.warn{background:var(--warn-soft);color:var(--warn)}.badge.err{background:var(--err-soft);color:var(--err)}
+.hint{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
+.hint code,.help code{background:#f2f0eb;border-radius:4px;padding:1px 5px;font-size:11.5px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#3a3e46}
+.progress{height:8px;border-radius:6px;background:#efecf7;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7a4cf3,#4e6cf5);transition:width .3s}
+.status-line{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;min-height:18px}
+.status-line.ok{color:var(--ok)}.status-line.err{color:var(--err)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:600;color:var(--ink-3)}
+.chip:hover{border-color:#bdb8ad}
+.live{overflow:hidden}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.steps li{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--faint);padding:3px 0}
+.steps li .st{width:18px;height:18px;border-radius:50%;border:2px solid var(--line-2);flex:none;display:grid;place-items:center}
+.steps li.run{color:var(--text);font-weight:600}
+.steps li.run .st{border-color:var(--ai);border-right-color:transparent;animation:spin .8s linear infinite}
+.steps li.done{color:var(--muted)}
+.steps li.done .st{border-color:var(--ok);background:var(--ok)}
+.steps li.done .st::after{content:'';width:5px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.steps li.err .st{border-color:var(--err);background:var(--err)}
+.stream-box{margin:0;white-space:pre-wrap;font-family:'Source Serif 4',Georgia,serif;font-size:13.5px;line-height:1.6;color:#33363d;background:#faf9f6;border-radius:9px;padding:12px 14px;max-height:240px;overflow:auto;border:1px solid var(--line)}
+.stream-box:empty::before{content:'Le texte apparaîtra ici en direct…';color:var(--faint);font-style:italic}
+.help summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:14px 16px;font-weight:600}
+.help summary::-webkit-details-marker{display:none}
+.help[open] summary .ic.chev{transform:rotate(180deg)}
+.help .ic.chev{margin-left:auto;transition:transform .2s;color:var(--faint)}
+.help-b{padding:0 18px 16px;color:#3c4048;font-size:13px;line-height:1.6;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.help-b h4{margin:0 0 4px;font-size:13px}
+.help-b p{margin:0 0 6px}
+/* ---------- Historique ---------- /
+.hist-view{overflow:auto;width:100%}
+.hist-wrap{max-width:1180px;margin:0 auto;padding:30px 24px 80px}
+.hist-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.hist-top h1{margin:0;font-size:26px;letter-spacing:-.02em;margin-right:auto}
+.search{position:relative}
+.search .ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--faint);width:16px;height:16px}
+.search input{padding-left:34px;width:240px}
+.hist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.hcard{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:box-shadow .15s,transform .15s,border-color .15s;animation:rise .2s}
+.hcard:hover{box-shadow:var(--shadow);transform:translateY(-2px);border-color:var(--line-2)}
+.hcard-top{height:92px;position:relative;padding:14px 16px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff}
+.hcard-top::after{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.12),rgba(0,0,0,.15))}
+.hcard-top b{position:relative;z-index:1;font-family:'Source Serif 4',Georgia,serif;font-size:17px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hcard-b{padding:12px 16px 8px;flex:1}
+.hcard-b p{margin:0;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcard-meta{display:flex;gap:10px;color:var(--faint);font-size:12px;margin-top:8px;flex-wrap:wrap}
+.hcard-f{display:flex;align-items:center;gap:2px;padding:6px 8px 8px;border-top:1px solid #f1efea}
+.hcard-f .open-tag{margin-right:auto;font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:999px;margin-left:8px}
+.hcard-f .sp{margin-right:auto}
+.hist-empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);background:#fff;border:1.5px dashed var(--line-2);border-radius:14px}
+/* ---------- Popover, toasts ---------- /
+.pop{position:fixed;z-index:200;min-width:230px;max-width:320px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg);padding:6px;animation:rise .12s ease-out}
+.pop-item{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;padding:9px 10px;border-radius:8px}
+.pop-item:hover:not(:disabled){background:#f4f2ee}
+.pop-item .ic{width:17px;height:17px;margin-top:1px;color:var(--muted)}
+.pop-item.ai .ic{color:var(--ai)}
+.pop-item b{display:block;font-size:13px;font-weight:600}
+.pop-item small{display:block;font-size:11.5px;color:var(--muted)}
+.pop-sep{height:1px;background:var(--line);margin:5px 6px}
+.pop-label{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);padding:6px 10px 3px}
+.toasts{position:fixed;bottom:70px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none;width:min(480px,calc(100vw - 24px))}
+@media (max-width:860px){.toasts{right:12px;left:12px;width:auto;align-items:stretch;bottom:76px}}
+.toast{pointer-events:auto;background:var(--ink);color:#fff;border-radius:11px;padding:10px 12px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-lg);font-size:13px;animation:rise .2s;max-width:100%}
+.toast .ic{width:17px;height:17px;flex:none}
+.toast.ok .ic{color:#4fd394}.toast.err .ic{color:#ff8080}.toast.warn .ic{color:#ffc35c}.toast.info .ic{color:#9db4ff}
+.toast span{flex:1}
+.toast button{color:#b9c8ff;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap}
+.toast button:hover{background:#2a2e38}
+.overlay{position:fixed;inset:0;background:rgba(15,16,20,.45);z-index:45;backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.on{opacity:1;pointer-events:auto}
+.pdf-host{position:fixed;left:-12000px;top:0;width:210mm;background:#fff}
+#print-root{display:none}
+/* ---------- Responsive ---------- /
+@media (max-width:1100px){
+.ai-grid{grid-template-columns:1fr}
+.help-b{grid-template-columns:1fr}
+.editor{grid-template-columns:minmax(330px,400px) minmax(0,1fr)}
+}
+@media (max-width:860px){
+.app{grid-template-columns:1fr}
+.sidebar{position:fixed;inset:0 auto 0 0;width:280px;transform:translateX(-100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);box-shadow:var(--shadow-lg)}
+.sidebar.open{transform:none}
+.topbar{padding:0 10px;gap:6px}
+.topbar .menu-btn{display:grid}
+.doc-name b{max-width:36vw}
+.btn .lbl{display:none}
+.btn{padding:0 10px}
+.editor{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+.mob-tabs{display:flex;grid-column:1;background:#fff;border-bottom:1px solid var(--line)}
+.mob-tabs button{flex:1;height:44px;font-weight:600;font-size:13.5px;color:var(--muted);border-bottom:2px solid transparent;display:flex;align-items:center;justify-content:center;gap:7px}
+.mob-tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+.editor[data-tab="edit"] .preview-pane{display:none}
+.editor[data-tab="preview"] .edit-pane{display:none}
+.edit-pane{border-right:0}
+.edit-scroll{padding:14px 12px 8px}
+.stage{padding:16px 8px 80px}
+.pv-stats{display:none}
+.ai-wrap,.hist-wrap{padding:20px 14px 80px}
+.search input{width:100%}
+.search{flex:1 1 100%;order:5}
+.ai-chip #ai-chip-text{max-width:110px}
+}
+@media (hover:none){ .sec-head .ib{width:34px;height:34px} }
+/* ---------- Impression (PDF vectoriel) ---------- /
+@page{size:A4;margin:18mm 18mm 20mm;@bottom-right{content:counter(page) " / " counter(pages);font-family:Inter,Arial,sans-serif;font-size:8pt;color:#9a9ea6}}
+@page cover{margin:0;@bottom-right{content:none}}
+@media print{
+html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+.app,.toasts,.pop,.overlay{display:none!important}
+#print-root{display:block}
+#print-root .sheet{width:auto;min-height:0;padding:0;margin:0;box-shadow:none;overflow:visible;break-after:page}
+#print-root .sheet:last-child{break-after:auto}
+#print-root .cover{page:cover;width:210mm;height:296.5mm;overflow:hidden}
+#print-root .sheet-foot{display:none}
+.d-h1,.d-h2{break-after:avoid}
+.d-fig,.d-quote,.doc li,.d-toc li{break-inside:avoid}
+.doc p{orphans:3;widows:3}
+}
+</style>
 </head>
-<body class="h-[100dvh] flex flex-col md:flex-row bg-slate-50 text-slate-800 overflow-hidden">
-
-    <!-- === MOBILE HEADER === -->
-    <header class="md:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 z-30 flex-shrink-0">
-        <div class="flex items-center gap-3">
-            <button onclick="toggleSidebar()" class="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                <i data-lucide="menu" class="w-6 h-6"></i>
-            </button>
-            <span class="font-serif font-bold text-xl text-brand-900 tracking-tight">Rapport Pro</span>
-        </div>
-        <div class="flex gap-2">
-             <!-- Mobile Actions (Save icon only) -->
-             <button onclick="saveReportToHistory()" class="p-2 text-brand-600 bg-brand-50 rounded-full">
-                <i data-lucide="save" class="w-5 h-5"></i>
-             </button>
-        </div>
-    </header>
-
-    <!-- === SIDEBAR (Navigation) === -->
-    <!-- Overlay -->
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden transition-opacity backdrop-blur-sm"></div>
-    
-    <!-- Drawer -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white z-50 transform -translate-x-full transition-transform duration-300 ease-out md:relative md:translate-x-0 md:w-64 shadow-2xl flex flex-col h-full invisible md:visible" ontransitionend="handleTransitionEnd(this)">
-        
-        <!-- Sidebar Header -->
-        <div class="p-6 border-b border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-                    <i data-lucide="file-text" class="text-white w-5 h-5"></i>
-                </div>
-                <span class="font-serif font-bold text-xl">Rapport Pro</span>
-            </div>
-            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white">
-                <i data-lucide="x" class="w-6 h-6"></i>
-            </button>
-        </div>
-
-        <!-- Navigation Links -->
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <button onclick="navigateTo('editor')" id="nav-editor" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left bg-brand-600 text-white shadow-lg shadow-brand-900/20">
-                <i data-lucide="edit-3" class="w-5 h-5"></i>
-                <div class="flex-1">
-                    <span class="block font-semibold">Éditeur</span>
-                    <span class="block text-xs opacity-80">Rédiger & Mettre en page</span>
-                </div>
-            </button>
-            
-            <button onclick="navigateTo('chati')" id="nav-chati" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left text-slate-400 hover:bg-slate-800 hover:text-white">
-                <i data-lucide="sparkles" class="w-5 h-5 text-purple-400"></i>
-                <div class="flex-1">
-                    <span class="block font-semibold">Chati Chati IA</span>
-                    <span class="block text-xs opacity-60">Assistant intelligent</span>
-                </div>
-            </button>
-
-            <button onclick="navigateTo('history')" id="nav-history" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left text-slate-400 hover:bg-slate-800 hover:text-white">
-                <i data-lucide="history" class="w-5 h-5"></i>
-                <div class="flex-1">
-                    <span class="block font-semibold">Historique</span>
-                    <span class="block text-xs opacity-60">Vos rapports sauvegardés</span>
-                </div>
-            </button>
-        </nav>
-
-        <!-- Sidebar Footer -->
-        <div class="p-4 border-t border-slate-800 bg-slate-950/50">
-            <div class="text-xs text-slate-500 text-center">
-                v2.5 • Mode Local Standalone
-            </div>
-        </div>
-    </aside>
-
-    <!-- === MAIN CONTENT AREA === -->
-    <main class="flex-1 flex flex-col relative overflow-hidden w-full bg-slate-50">
-
-        <!-- PAGE: EDITOR -->
-        <div id="page-editor" class="flex-1 flex flex-col md:flex-row h-full w-full">
-            
-            <!-- Mobile Tabs -->
-            <div class="md:hidden flex border-b border-slate-200 bg-white z-10 shrink-0">
-                <button onclick="switchMobileTab('edit')" id="tab-edit" class="flex-1 py-3 text-sm font-semibold text-center border-b-2 border-brand-600 text-brand-600">
-                    <i data-lucide="pen-tool" class="w-4 h-4 inline-block mr-1 mb-0.5"></i> Édition
-                </button>
-                <button onclick="switchMobileTab('preview')" id="tab-preview" class="flex-1 py-3 text-sm font-semibold text-center border-b-2 border-transparent text-slate-500">
-                    <i data-lucide="eye" class="w-4 h-4 inline-block mr-1 mb-0.5"></i> Aperçu
-                </button>
-            </div>
-
-            <!-- Left Panel: Inputs -->
-            <div id="panel-inputs" class="w-full md:w-[450px] lg:w-[500px] flex-shrink-0 bg-white h-full overflow-y-auto border-r border-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10">
-                <div class="p-5 md:p-8 space-y-8 pb-32 md:pb-24">
-                    
-                    <!-- Report Meta -->
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-2 text-brand-900 font-bold text-sm uppercase tracking-wider">
-                            <i data-lucide="settings-2" class="w-4 h-4"></i> Configuration
-                        </div>
-                        <div class="space-y-3">
-                            <input type="text" id="meta-title" oninput="updateState('title', this.value)" 
-                                class="w-full text-xl font-serif font-bold placeholder-slate-300 border-0 border-b-2 border-slate-100 focus:border-brand-500 focus:ring-0 px-0 py-2 transition-colors" 
-                                placeholder="Titre du Rapport">
-                            
-                            <input type="text" id="meta-subject" oninput="updateState('subject', this.value)" 
-                                class="w-full text-sm font-medium text-slate-600 placeholder-slate-300 border-0 border-b border-slate-100 focus:border-brand-500 focus:ring-0 px-0 py-2" 
-                                placeholder="Ajouter un sous-titre ou sujet...">
-                                
-                            <div class="flex gap-4">
-                                <input type="text" id="meta-author" oninput="updateState('author', this.value)" 
-                                    class="flex-1 text-sm text-slate-600 placeholder-slate-300 border-0 border-b border-slate-100 focus:border-brand-500 focus:ring-0 px-0 py-2" 
-                                    placeholder="Auteur">
-                                <input type="date" id="meta-date" oninput="updateState('date', this.value)" 
-                                    class="w-32 text-sm text-slate-600 border-0 border-b border-slate-100 focus:border-brand-500 focus:ring-0 px-0 py-2 bg-transparent">
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr class="border-slate-100">
-
-                    <!-- Sections Builder -->
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur py-2 z-10">
-                            <div class="text-brand-900 font-bold text-sm uppercase tracking-wider flex items-center gap-2">
-                                <i data-lucide="layers" class="w-4 h-4"></i> Sections
-                            </div>
-                            <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                                <button onclick="addSection('heading')" class="p-2 hover:bg-white hover:shadow-sm rounded-md transition-all" title="Ajouter Titre"><i data-lucide="heading" class="w-4 h-4 text-slate-700"></i></button>
-                                <button onclick="addSection('paragraph')" class="p-2 hover:bg-white hover:shadow-sm rounded-md transition-all" title="Ajouter Texte"><i data-lucide="align-left" class="w-4 h-4 text-slate-700"></i></button>
-                                <button onclick="addSection('image')" class="p-2 hover:bg-white hover:shadow-sm rounded-md transition-all" title="Ajouter Image"><i data-lucide="image" class="w-4 h-4 text-slate-700"></i></button>
-                            </div>
-                        </div>
-
-                        <div id="sections-list" class="space-y-3 min-h-[200px]">
-                            <!-- JS will populate this -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Panel: Preview -->
-            <div id="panel-preview" class="hidden md:flex flex-1 bg-slate-100/50 h-full overflow-y-auto items-start justify-center p-4 md:p-10 relative">
-                <!-- Scale Controls -->
-                <div class="fixed md:absolute bottom-4 right-4 md:top-4 md:right-8 md:bottom-auto flex flex-col gap-2 z-20">
-                    <div class="bg-white shadow-lg rounded-lg p-1 flex flex-col gap-1 border border-slate-200">
-                        <button onclick="exportPDF()" class="p-2 hover:bg-red-50 text-red-600 rounded" title="Export PDF"><i data-lucide="file-down" class="w-5 h-5"></i></button>
-                        <button onclick="exportWord()" class="p-2 hover:bg-blue-50 text-blue-600 rounded" title="Export Word"><i data-lucide="file-text" class="w-5 h-5"></i></button>
-                    </div>
-                </div>
-
-                <!-- The Page -->
-                <div id="report-preview-container" class="a4-page transform transition-transform duration-200 origin-top scale-[0.5] sm:scale-[0.6] md:scale-[0.7] lg:scale-[0.8] xl:scale-[0.9] 2xl:scale-100">
-                    <!-- JS Content -->
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE: CHATI (AI) -->
-        <div id="page-chati" class="hidden h-full overflow-y-auto bg-slate-50">
-            <div class="max-w-3xl mx-auto p-6 md:p-12 space-y-8 pb-32">
-                <div class="text-center space-y-3">
-                    <div class="w-16 h-16 bg-gradient-to-tr from-brand-600 to-purple-500 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-brand-500/30 mb-6">
-                        <i data-lucide="sparkles" class="w-8 h-8 text-white"></i>
-                    </div>
-                    <h2 class="text-3xl md:text-4xl font-serif font-bold text-slate-900">Assistant Intelligent</h2>
-                    <p class="text-slate-500 max-w-md mx-auto">Laissez l'IA structurer et rédiger votre rapport. Entrez simplement votre sujet.</p>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <!-- AI Info Box -->
-                    <div id="ai-setup" class="p-8 text-center space-y-6">
-                        <div class="bg-green-50 text-green-800 p-4 rounded-xl text-sm inline-block">
-                            <i data-lucide="cpu" class="w-4 h-4 inline mr-2"></i>
-                            IA Locale • Zéro API externe
-                        </div>
-                        <p class="text-sm text-slate-500">
-                            Génération de rapports professionnels en local. Basé sur des templates intelligents et structurés.
-                        </p>
-                    </div>
-
-                    <!-- AI Form -->
-                    <div id="ai-form" class="p-6 md:p-8 space-y-6">
-                        <div class="space-y-2">
-                            <label class="block text-sm font-bold text-slate-700">Sujet du rapport</label>
-                            <input type="text" id="ai-topic" class="w-full p-4 bg-slate-50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 transition-all text-lg" placeholder="Ex: Stratégie Marketing 2025...">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="block text-sm font-bold text-slate-700">Instructions détaillées (Optionnel)</label>
-                            <textarea id="ai-instructions" class="w-full p-4 bg-slate-50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 transition-all h-32 resize-none" placeholder="Ton formel, insister sur les chiffres, 3 parties..."></textarea>
-                        </div>
-                        <button onclick="runAI()" id="btn-ai-generate" class="w-full py-4 bg-gradient-to-r from-brand-600 to-purple-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                            <i data-lucide="wand-2" class="w-5 h-5"></i> Générer le Brouillon
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE: HISTORY -->
-        <div id="page-history" class="hidden h-full overflow-y-auto bg-slate-50">
-            <div class="max-w-5xl mx-auto p-6 md:p-12 space-y-8 pb-32">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-3xl font-serif font-bold text-slate-900">Vos Rapports</h2>
-                    <button onclick="createNew()" class="bg-brand-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-brand-700 transition-colors flex items-center gap-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i> Nouveau
-                    </button>
-                </div>
-                
-                <div id="history-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Cards injected here -->
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- === SCRIPTS === -->
-    <script>
-        // --- APP STATE ---
-        const app = {
-            report: {
-                id: crypto.randomUUID(),
-                title: "",
-                subject: "",
-                author: "",
-                date: new Date().toISOString().split('T')[0],
-                sections: []
-            },
-            history: JSON.parse(localStorage.getItem('reports_v2') || '[]'),
-            view: 'editor', // editor, chati, history
-            mobileTab: 'edit' // edit, preview
-        };
-
-        // --- INIT ---
-        window.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            loadFromHistoryOrNew();
-            render();
-            
-            // Responsive handler
-            window.addEventListener('resize', () => {
-                if (window.innerWidth >= 768) {
-                    document.getElementById('panel-inputs').classList.remove('hidden');
-                    document.getElementById('panel-preview').classList.remove('hidden');
-                    document.getElementById('sidebar').classList.remove('-translate-x-full');
-                } else {
-                    applyMobileTab();
-                    document.getElementById('sidebar').classList.add('-translate-x-full');
-                }
-            });
-        });
-
-        // --- NAVIGATION ---
-        function navigateTo(page) {
-            app.view = page;
-            // Close sidebar on mobile
-            if (window.innerWidth < 768) toggleSidebar(false); // Force close
-            render();
-        }
-
-        function toggleSidebar(forceState) {
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('sidebar-overlay');
-            const isClosed = sb.classList.contains('-translate-x-full');
-            
-            const shouldOpen = forceState !== undefined ? forceState : isClosed;
-            
-            if (shouldOpen) {
-                sb.classList.remove('invisible'); // Make visible before sliding in
-                // Small delay to ensure display block is registered before transform
-                requestAnimationFrame(() => {
-                    sb.classList.remove('-translate-x-full');
-                    ov.classList.remove('hidden');
-                    ov.classList.remove('opacity-0');
-                });
-            } else {
-                sb.classList.add('-translate-x-full');
-                ov.classList.add('opacity-0');
-                setTimeout(() => {
-                   ov.classList.add('hidden');
-                }, 300); // Wait for opacity fade
-            }
-        }
-        
-        function handleTransitionEnd(el) {
-            if (el.classList.contains('-translate-x-full') && window.innerWidth < 768) {
-                el.classList.add('invisible'); // Hide completely after slide out to prevent ghost clicks
-            }
-        }
-
-        function switchMobileTab(tab) {
-            app.mobileTab = tab;
-            applyMobileTab();
-        }
-
-        function applyMobileTab() {
-            const inputs = document.getElementById('panel-inputs');
-            const preview = document.getElementById('panel-preview');
-            const tEdit = document.getElementById('tab-edit');
-            const tPreview = document.getElementById('tab-preview');
-
-            if (window.innerWidth < 768 && app.view === 'editor') {
-                if (app.mobileTab === 'edit') {
-                    inputs.classList.remove('hidden');
-                    preview.classList.add('hidden');
-                    tEdit.className = "flex-1 py-3 text-sm font-bold text-center border-b-2 border-brand-600 text-brand-600";
-                    tPreview.className = "flex-1 py-3 text-sm font-medium text-center border-b-2 border-transparent text-slate-500";
-                } else {
-                    inputs.classList.add('hidden');
-                    preview.classList.remove('hidden');
-                    preview.classList.add('flex'); // ensure flex display
-                    tPreview.className = "flex-1 py-3 text-sm font-bold text-center border-b-2 border-brand-600 text-brand-600";
-                    tEdit.className = "flex-1 py-3 text-sm font-medium text-center border-b-2 border-transparent text-slate-500";
-                }
-            }
-        }
-
-        // --- CORE LOGIC ---
-        function updateState(field, value) {
-            app.report[field] = value;
-            renderPreview();
-        }
-
-        function addSection(type) {
-            app.report.sections.push({
-                id: crypto.randomUUID(),
-                type,
-                title: type === 'heading' ? 'Nouvelle Section' : '',
-                content: '',
-                image: ''
-            });
-            renderSections();
-            renderPreview();
-            // Auto switch to edit on mobile
-            if (window.innerWidth < 768) switchMobileTab('edit');
-        }
-
-        function updateSection(id, key, val) {
-            const s = app.report.sections.find(x => x.id === id);
-            if (s) {
-                s[key] = val;
-                renderPreview();
-            }
-        }
-
-        function deleteSection(id) {
-            app.report.sections = app.report.sections.filter(x => x.id !== id);
-            renderSections();
-            renderPreview();
-        }
-
-        function moveSection(idx, dir) {
-            const arr = app.report.sections;
-            if (idx + dir < 0 || idx + dir >= arr.length) return;
-            [arr[idx], arr[idx+dir]] = [arr[idx+dir], arr[idx]];
-            renderSections();
-            renderPreview();
-        }
-
-        function handleImage(file, id) {
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                updateSection(id, 'image', e.target.result);
-                renderSections(); // refresh thumb
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function createNew() {
-            app.report = {
-                id: crypto.randomUUID(),
-                title: "",
-                subject: "",
-                author: "",
-                date: new Date().toISOString().split('T')[0],
-                sections: []
-            };
-            navigateTo('editor');
-            // Reset UI inputs
-            document.getElementById('meta-title').value = "";
-            document.getElementById('meta-subject').value = "";
-            document.getElementById('meta-author').value = "";
-        }
-
-        function saveReportToHistory() {
-            const idx = app.history.findIndex(x => x.id === app.report.id);
-            const copy = JSON.parse(JSON.stringify(app.report));
-            
-            if (!copy.title) copy.title = "Sans Titre"; // Fallback
-
-            if (idx >= 0) app.history[idx] = copy;
-            else app.history.push(copy);
-            
-            localStorage.setItem('reports_v2', JSON.stringify(app.history));
-            
-            // Visual feedback
-            const btn = document.querySelector('button[onclick="saveReportToHistory()"]');
-            const original = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="check" class="w-5 h-5 text-green-500"></i>`;
-            setTimeout(() => btn.innerHTML = original, 2000);
-        }
-
-        function loadFromHistoryOrNew() {
-            if (app.history.length > 0) {
-                // Load latest? Or just new? Let's default to new but keep history ready
-            }
-        }
-
-        function loadReport(id) {
-            const found = app.history.find(x => x.id === id);
-            if (found) {
-                app.report = JSON.parse(JSON.stringify(found));
-                navigateTo('editor');
-            }
-        }
-
-        function deleteReport(e, id) {
-            e.stopPropagation();
-            if(!confirm("Supprimer définitivement ?")) return;
-            app.history = app.history.filter(x => x.id !== id);
-            localStorage.setItem('reports_v2', JSON.stringify(app.history));
-            renderHistory();
-        }
-
-        // --- RENDERERS ---
-        function render() {
-            // Toggle Pages
-            ['editor', 'chati', 'history'].forEach(v => {
-                const el = document.getElementById(`page-${v}`);
-                const nav = document.getElementById(`nav-${v}`);
-                
-                if (v === app.view) {
-                    el.classList.remove('hidden');
-                    el.classList.add('flex'); // Ensure flex for layout
-                    
-                    // Active Nav Style
-                    nav.classList.remove('text-slate-400', 'hover:bg-slate-800');
-                    nav.classList.add('bg-brand-600', 'text-white', 'shadow-lg');
-                    nav.querySelector('span.opacity-60')?.classList.remove('opacity-60');
-                    nav.querySelector('span.opacity-80')?.classList.add('opacity-80');
-                } else {
-                    el.classList.add('hidden');
-                    el.classList.remove('flex');
-                    
-                    // Inactive Nav Style
-                    nav.classList.add('text-slate-400', 'hover:bg-slate-800');
-                    nav.classList.remove('bg-brand-600', 'text-white', 'shadow-lg');
-                }
-            });
-
-            if (app.view === 'editor') {
-                renderSections();
-                renderPreview();
-                applyMobileTab();
-                
-                // Populate Inputs if empty (re-binding)
-                const t = document.getElementById('meta-title');
-                if (t.value !== app.report.title) t.value = app.report.title;
-                document.getElementById('meta-subject').value = app.report.subject || '';
-                document.getElementById('meta-author').value = app.report.author || '';
-                document.getElementById('meta-date').value = app.report.date || '';
-            }
-            
-            if (app.view === 'chati') renderChati();
-            if (app.view === 'history') renderHistory();
-            
-            lucide.createIcons();
-        }
-
-        function renderSections() {
-            const list = document.getElementById('sections-list');
-            list.innerHTML = '';
-
-            app.report.sections.forEach((s, i) => {
-                const item = document.createElement('div');
-                item.className = "group bg-white border border-slate-200 rounded-xl p-4 hover:border-brand-300 transition-all hover:shadow-md relative animate-fade-in";
-                
-                let inner = '';
-                
-                // Type Icon
-                const icon = s.type === 'heading' ? 'heading' : s.type === 'paragraph' ? 'align-left' : 'image';
-                
-                inner += `
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                            <i data-lucide="${icon}" class="w-3 h-3"></i> ${s.type === 'heading' ? 'Titre' : s.type === 'paragraph' ? 'Paragraphe' : 'Image'}
-                        </div>
-                        <div class="flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="moveSection(${i}, -1)" class="p-1 hover:bg-slate-100 rounded text-slate-500"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
-                            <button onclick="moveSection(${i}, 1)" class="p-1 hover:bg-slate-100 rounded text-slate-500"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
-                            <button onclick="deleteSection('${s.id}')" class="p-1 hover:bg-red-50 rounded text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    </div>
-                `;
-
-                if (s.type === 'heading') {
-                    inner += `<input type="text" value="${s.title}" oninput="updateSection('${s.id}', 'title', this.value)" class="w-full font-bold text-lg border-0 border-b border-slate-100 focus:border-brand-500 focus:ring-0 px-0 py-1 placeholder-slate-300" placeholder="Titre de la section...">`;
-                } else if (s.type === 'paragraph') {
-                    inner += `<textarea oninput="updateSection('${s.id}', 'content', this.value)" class="w-full text-sm leading-relaxed border-0 bg-slate-50 rounded-lg p-3 focus:ring-2 focus:ring-brand-500 resize-y min-h-[100px]" placeholder="Écrivez votre contenu ici...">${s.content || ''}</textarea>`;
-                } else if (s.type === 'image') {
-                    inner += `
-                        <div class="flex gap-3">
-                            <div class="w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
-                                ${s.image ? `<img src="${s.image}" class="w-full h-full object-cover">` : `<i data-lucide="image" class="text-slate-300"></i>`}
-                            </div>
-                            <div class="flex-1 space-y-2">
-                                <label class="block">
-                                    <span class="sr-only">Choisir image</span>
-                                    <input type="file" accept="image/*" onchange="handleImage(this.files[0], '${s.id}')" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"/>
-                                </label>
-                                <input type="text" value="${s.title || ''}" oninput="updateSection('${s.id}', 'title', this.value)" class="w-full text-xs border border-slate-200 rounded p-1.5" placeholder="Légende (optionnel)">
-                            </div>
-                        </div>
-                    `;
-                }
-
-                item.innerHTML = inner;
-                list.appendChild(item);
-            });
-            lucide.createIcons();
-        }
-
-        function renderPreview() {
-            const container = document.getElementById('report-preview-container');
-            const r = app.report;
-            
-            let html = `
-                <div class="text-center mb-12 border-b-2 border-brand-900 pb-8">
-                    <h1 class="font-serif text-4xl font-bold text-brand-900 mb-2 leading-tight">${r.title || 'Titre du Rapport'}</h1>
-                    ${r.subject ? `<h2 class="text-xl text-slate-500 uppercase tracking-widest font-medium">${r.subject}</h2>` : ''}
-                    
-                    <div class="flex justify-center gap-6 mt-8 text-sm text-slate-400 font-medium">
-                        <span>${r.author || 'Auteur inconnu'}</span>
-                        <span>&bull;</span>
-                        <span>${new Date(r.date).toLocaleDateString('fr-FR', {year:'numeric', month:'long', day:'numeric'})}</span>
-                    </div>
-                </div>
-            `;
-
-            // Table of Contents (Auto)
-            const headings = r.sections.filter(x => x.type === 'heading');
-            if (headings.length > 0) {
-                html += `
-                    <div class="bg-slate-50 p-8 rounded-xl mb-12 break-inside-avoid">
-                        <h3 class="font-serif font-bold text-xl text-slate-900 mb-6 pb-2 border-b border-slate-200">Sommaire</h3>
-                        <ul class="space-y-3">
-                            ${headings.map((h,i) => `
-                                <li class="flex items-baseline justify-between text-sm">
-                                    <span class="font-medium text-slate-700"><span class="text-brand-500 mr-2">${i+1}.</span>${h.title}</span>
-                                    <span class="flex-1 border-b border-dotted border-slate-300 mx-2"></span>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-
-            // Content
-            html += `<div class="space-y-6 text-slate-800 leading-relaxed">`;
-            
-            r.sections.forEach(s => {
-                if (s.type === 'heading') {
-                    html += `<h3 class="font-serif text-2xl font-bold text-brand-800 mt-10 mb-4 pb-2 border-l-4 border-brand-500 pl-4 break-after-avoid">${s.title}</h3>`;
-                } else if (s.type === 'paragraph') {
-                    html += `<p class="text-justify text-[11pt] text-slate-700 mb-4 whitespace-pre-line">${s.content}</p>`;
-                } else if (s.type === 'image' && s.image) {
-                    html += `
-                        <figure class="my-8 text-center break-inside-avoid">
-                            <img src="${s.image}" class="max-h-[400px] max-w-full rounded-lg shadow-sm mx-auto border border-slate-100">
-                            ${s.title ? `<figcaption class="mt-2 text-sm text-slate-400 italic">${s.title}</figcaption>` : ''}
-                        </figure>
-                    `;
-                }
-            });
-            
-            html += `</div>`;
-            
-            // Footer
-            html += `
-                <div class="mt-20 pt-6 border-t border-slate-100 text-center text-xs text-slate-300">
-                    Généré par Rapport Pro • Page 1/1
-                </div>
-            `;
-
-            container.innerHTML = html;
-        }
-
-        function renderChati() {
-            const setup = document.getElementById('ai-setup');
-            const form = document.getElementById('ai-form');
-            
-            // IA locale toujours disponible
-            setup.classList.remove('hidden');
-            form.classList.remove('hidden');
-        }
-
-        function renderHistory() {
-            const grid = document.getElementById('history-grid');
-            grid.innerHTML = '';
-            
-            if (app.history.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-20 text-slate-400 bg-white rounded-xl border border-dashed border-slate-200">Aucun rapport sauvegardé.</div>`;
-                return;
-            }
-
-            app.history.forEach(h => {
-                const card = document.createElement('div');
-                card.className = "bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all cursor-pointer group";
-                card.onclick = () => loadReport(h.id);
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
-                            <i data-lucide="file-text" class="w-5 h-5"></i>
-                        </div>
-                        <button onclick="deleteReport(event, '${h.id}')" class="text-slate-300 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </div>
-                    <h3 class="font-serif font-bold text-lg text-slate-900 mb-1 truncate">${h.title || 'Sans titre'}</h3>
-                    <p class="text-sm text-slate-500 mb-4 truncate">${h.subject || '...'}</p>
-                    <div class="text-xs text-slate-400 border-t border-slate-50 pt-3 flex justify-between">
-                        <span>${h.date}</span>
-                        <span class="text-brand-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">Ouvrir &rarr;</span>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-            lucide.createIcons();
-        }
-
-        // --- AI PYTHON ENGINE ---
-        async function runAI() {
-            const btn = document.getElementById('btn-ai-generate');
-            const topic = document.getElementById('ai-topic').value.trim();
-            const instr = document.getElementById('ai-instructions').value.trim();
-            
-            if (!topic) {
-                alert("Veuillez entrer un sujet pour le rapport");
-                return;
-            }
-            
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-5 h-5"></i> IA Python en cours...`;
-            lucide.createIcons();
-
-            try {
-                const res = await fetch('/api/ai/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ topic, instructions: instr })
-                });
-
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.error || 'Erreur API');
-                }
-
-                const generated = await res.json();
-                
-                app.report.title = generated.title;
-                app.report.subject = generated.subject;
-                app.report.sections = generated.sections;
-                
-                navigateTo('editor');
-                renderSections();
-                renderPreview();
-                
-                alert("✅ Rapport généré par l'IA Python ! Affinez-le dans l'éditeur.");
-
-            } catch (e) {
-                console.error('AI Error:', e);
-                alert("Erreur: " + e.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="wand-2" class="w-5 h-5"></i> Générer le Brouillon`;
-                lucide.createIcons();
-            }
-        }
-
-        // --- EXPORT ---
-        function exportPDF() {
-            const el = document.getElementById('report-preview-container');
-            html2pdf().set({
-                margin: 10,
-                filename: (app.report.title || 'rapport') + '.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(el).save();
-        }
-
-        function exportWord() {
-            const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
-            
-            const doc = new Document({
-                sections: [{
-                    properties: {},
-                    children: [
-                        new Paragraph({ text: app.report.title || "Rapport", heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER }),
-                        new Paragraph({ text: app.report.subject || "", heading: HeadingLevel.HEADING_2, alignment: AlignmentType.CENTER }),
-                        
-                        ...app.report.sections.flatMap(s => {
-                            if (s.type === 'heading') return new Paragraph({ text: s.title, heading: HeadingLevel.HEADING_1, spacing: {before: 400, after: 200} });
-                            if (s.type === 'paragraph') return new Paragraph({ text: s.content, spacing: {after: 200}, alignment: AlignmentType.JUSTIFIED });
-                            if (s.type === 'image') return new Paragraph({ text: "[Image non incluse dans cette version Word]", alignment: AlignmentType.CENTER, italics: true });
-                            return [];
-                        })
-                    ]
-                }]
-            });
-            
-            Packer.toBlob(doc).then(blob => {
-                saveAs(blob, (app.report.title || 'rapport') + '.docx');
-            });
-        }
-
-    </script>
+<body>
+<div class="app" id="app">
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+<div class="brand-mark"><i data-i="file"></i></div>
+<div><b>Rapport Pro</b><small>Éditeur de rapports</small></div>
+</div>
+<nav class="nav">
+<button class="nav-item" data-nav="editor"><i data-i="pen"></i><span><b>Éditeur</b><small>Rédiger et mettre en page</small></span></button>
+<button class="nav-item" data-nav="ai"><i data-i="sparkles" class="ai-ic"></i><span><b>Chati IA</b><small>Rédaction assistée</small></span></button>
+<button class="nav-item" data-nav="history"><i data-i="history"></i><span><b>Historique</b><small>Vos rapports enregistrés</small></span></button>
+</nav>
+<div class="side-foot">
+<span class="engine-pill"><span class="dot" id="eng-dot"></span><span id="eng-label">IA : vérification…</span></span>
+<div class="meter"><i id="meter-bar"></i></div>
+<span id="meter-label">Stockage local</span>
+</div>
+</aside>
+<div class="overlay" id="overlay"></div>
+<!-- ============ MAIN ============ -->
+<div class="main">
+<header class="topbar">
+<button class="ib menu-btn" id="menu-btn" aria-label="Menu"><i data-i="menu"></i></button>
+<div class="doc-name">
+<b id="top-title">Sans titre</b>
+<span class="save-state" id="save-state">Brouillon</span>
+</div>
+<div class="grow"></div>
+<div class="ai-chip" id="ai-chip" hidden><i data-i="sparkles"></i><span id="ai-chip-text">IA en cours…</span><button id="ai-stop">Arrêter</button></div>
+<button class="btn btn-ghost" id="btn-new" title="Nouveau rapport"><i data-i="plus"></i><span class="lbl">Nouveau</span></button>
+<button class="btn btn-line" id="btn-export" title="Exporter"><i data-i="download"></i><span class="lbl">Exporter</span><i data-i="chevron" class="sm"></i></button>
+<button class="btn btn-primary" id="btn-save" title="Enregistrer (Ctrl+S)"><i data-i="save"></i><span class="lbl">Enregistrer</span></button>
+</header>
+<div class="views">
+<!-- ============ EDITOR ============ -->
+<section class="view" id="view-editor">
+<div class="editor" id="editor" data-tab="edit">
+<div class="mob-tabs">
+<button data-tab="edit" class="on"><i data-i="pen" class="sm"></i>Édition</button>
+<button data-tab="preview"><i data-i="eye" class="sm"></i>Aperçu</button>
+</div>
+<div class="edit-pane">
+<div class="edit-scroll" id="edit-scroll">
+<div class="card" id="card-doc">
+<div class="card-h"><i data-i="file"></i>Document<button class="collapse-btn" data-collapse="card-doc" aria-label="Replier"><i data-i="chevron"></i></button></div>
+<div class="card-b">
+<input class="txt title-in" id="m-title" data-meta="title" placeholder="Titre du rapport" autocomplete="off">
+<input class="txt" id="m-subject" data-meta="subject" placeholder="Sous-titre ou sujet" autocomplete="off">
+<div class="row">
+<label class="field"><span>Auteur</span><input class="txt" data-meta="author" placeholder="Prénom Nom"></label>
+<label class="field"><span>Date</span><input class="txt" type="date" data-meta="date"></label>
+</div>
+<label class="field"><span>Établissement / entreprise</span><input class="txt" data-meta="org" placeholder="Ex : IUT Nice Côte d'Azur"></label>
+</div>
+</div>
+<div class="card" id="card-layout">
+<div class="card-h"><i data-i="sliders"></i>Mise en page<button class="collapse-btn" data-collapse="card-layout" aria-label="Replier"><i data-i="chevron"></i></button></div>
+<div class="card-b">
+<div class="field"><span>Couleur</span><div class="swatches" id="swatches"></div></div>
+<div class="field"><span>Style</span><div class="seg" id="fonts"></div></div>
+<div class="toggles" id="toggles"></div>
+</div>
+</div>
+<div class="list-title"><b><i data-i="layers"></i>Contenu</b><small id="sec-count"></small></div>
+<div id="sections"></div>
+</div>
+<div class="addbar" id="addbar">
+<span>Ajouter</span>
+<button class="add-btn" data-add="h1"><i data-i="heading"></i>Titre</button>
+<button class="add-btn" data-add="h2"><i data-i="heading2"></i>Sous-titre</button>
+<button class="add-btn" data-add="p"><i data-i="text"></i>Texte</button>
+<button class="add-btn" data-add="img"><i data-i="image"></i>Image</button>
+<button class="add-btn" data-add="quote"><i data-i="quote"></i>Encadré</button>
+<button class="add-btn" data-add="pb"><i data-i="pagebreak"></i>Saut de page</button>
+</div>
+</div>
+<div class="preview-pane">
+<div class="pv-bar">
+<button class="ib" id="zoom-out" title="Zoom arrière"><i data-i="zoomout"></i></button>
+<span class="zoom-val" id="zoom-val">100%</span>
+<button class="ib" id="zoom-in" title="Zoom avant"><i data-i="zoomin"></i></button>
+<button class="ib" id="zoom-fit" title="Ajuster à la largeur"><i data-i="fit"></i></button>
+<div class="pv-stats"><span><b id="st-words">0</b> mots</span><span>≈ <b id="st-pages">1</b> page(s)</span><span><b id="st-read">0</b> min de lecture</span></div>
+</div>
+<div class="stage" id="stage"><div class="zoomer" id="zoomer"></div></div>
+</div>
+</div>
+</section>
+<!-- ============ CHATI IA ============ -->
+<section class="view ai-view" id="view-ai" hidden>
+<div class="ai-wrap">
+<div class="ai-hero">
+<div class="ai-logo"><i data-i="sparkles"></i></div>
+<div><h1>Chati IA</h1><p>Donnez un sujet : l'IA propose un plan puis rédige chaque partie directement dans l'éditeur.</p></div>
+</div>
+<div class="ai-grid">
+<div class="card ai-form">
+<div class="card-h"><i data-i="wand"></i>Nouveau brouillon</div>
+<div class="card-b">
+<label class="field"><span>Sujet du rapport</span><input class="txt topic-in" id="ai-topic" placeholder="Ex : Mise en place d'un capteur de température connecté" autocomplete="off"></label>
+<div class="row">
+<label class="field"><span>Type de document</span>
+<select class="txt" id="ai-type">
+<option value="auto">Détection automatique</option>
+<option value="stage">Rapport de stage</option>
+<option value="technique">Rapport technique / TP</option>
+<option value="projet">Rapport de projet</option>
+<option value="analyse">Étude / analyse</option>
+<option value="reunion">Compte rendu de réunion</option>
+<option value="general">Rapport général</option>
+</select>
+</label>
+<label class="field"><span>Ton</span>
+<select class="txt" id="ai-tone">
+<option value="formel">Formel</option>
+<option value="neutre">Neutre et clair</option>
+<option value="pedagogique">Pédagogique</option>
+<option value="technique">Technique</option>
+</select>
+</label>
+</div>
+<div class="row">
+<div class="field"><span>Longueur</span><div class="seg" id="ai-length"><button data-v="court">Court</button><button data-v="moyen" class="on">Moyen</button><button data-v="long">Long</button></div></div>
+<label class="field"><span>Nombre de parties</span>
+<select class="txt" id="ai-parts"><option value="auto">Automatique</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+</label>
+</div>
+<label class="field"><span>Consignes (optionnel)</span><textarea class="txt" id="ai-instr" rows="3" placeholder="Ex : insister sur les résultats de mesure, vocabulaire simple, citer le matériel utilisé…"></textarea></label>
+<div class="field"><span>Destination</span><div class="seg" id="ai-target"><button data-v="new" class="on">Nouveau rapport</button><button data-v="append">Ajouter au rapport ouvert</button></div></div>
+<button class="btn btn-ai btn-lg" id="ai-go"><i data-i="sparkles"></i>Générer le brouillon</button>
+<p class="hint" id="ai-go-hint"></p>
+</div>
+</div>
+<div class="ai-col">
+<div class="card">
+<div class="card-h"><i data-i="cpu"></i>Moteur d'IA</div>
+<div class="card-b">
+<div class="engines" id="engines">
+<div class="eng" data-eng="webllm">
+<button class="eng-h" data-pick="webllm"><span class="eng-ic"><i data-i="cpu"></i></span><span class="eng-t"><b>Dans le navigateur <span class="badge" id="gpu-badge">…</span></b><small>Vraie IA, 100 % locale (WebGPU), sans compte ni clé</small></span><i class="radio"></i></button>
+<div class="eng-b">
+<label class="field"><span>Modèle</span><select class="txt" id="wl-model"></select></label>
+<div class="progress" id="wl-prog" hidden><i id="wl-bar"></i></div>
+<div class="status-line" id="wl-status">Modèle non chargé.</div>
+<div class="row" style="flex:none"><button class="btn btn-line btn-sm" id="wl-load" style="flex:none"><i data-i="download"></i>Charger le modèle</button></div>
+<p class="hint">Téléchargé une seule fois (≈ 1 à 2 Go selon le modèle), puis gardé en cache par le navigateur. Rien n'est envoyé sur internet. Nécessite Chrome, Edge ou un navigateur récent avec WebGPU.</p>
+</div>
+</div>
+<div class="eng" data-eng="server">
+<button class="eng-h" data-pick="server"><span class="eng-ic"><i data-i="server"></i></span><span class="eng-t"><b>Serveur local</b><small>Ollama, LM Studio, llama.cpp… (API compatible OpenAI)</small></span><i class="radio"></i></button>
+<div class="eng-b">
+<div class="chips"><button class="chip" data-preset="http://localhost:11434/v1">Ollama</button><button class="chip" data-preset="http://localhost:1234/v1">LM Studio</button><button class="chip" data-preset="http://localhost:8080/v1">llama.cpp</button></div>
+<label class="field"><span>Adresse de l'API</span><input class="txt" id="sv-url" placeholder="http://localhost:11434/v1"></label>
+<div class="row">
+<label class="field"><span>Modèle</span><input class="txt" id="sv-model" list="sv-models" placeholder="ex : qwen2.5:7b"><datalist id="sv-models"></datalist></label>
+<label class="field"><span>Clé (optionnel)</span><input class="txt" id="sv-key" type="password" placeholder="—" autocomplete="off"></label>
+</div>
+<div class="row" style="align-items:center"><button class="btn btn-line btn-sm" id="sv-test" style="flex:none"><i data-i="zap"></i>Tester la connexion</button><span class="status-line" id="sv-status"></span></div>
+<p class="hint">Ollama : installez-le, lancez <code>ollama pull qwen2.5:7b</code>, puis autorisez cette page avec la variable <code>OLLAMA_ORIGINS=</code> avant de démarrer Ollama.</p>
+</div>
+</div>
+<div class="eng" data-eng="builtin">
+<button class="eng-h" data-pick="builtin"><span class="eng-ic"><i data-i="zap"></i></span><span class="eng-t"><b>Trame hors ligne</b><small>Instantané, sans téléchargement ni internet</small></span><i class="radio"></i></button>
+<div class="eng-b">
+<p class="hint">Génère un plan complet adapté au type de document, avec des paragraphes rédigés et des zones <code>[à compléter]</code>. Les actions de réécriture (reformuler, corriger, développer) demandent l'un des deux moteurs ci-dessus.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="card live" id="ai-live" hidden>
+<div class="card-h"><i data-i="sparkles"></i>Progression</div>
+<div class="card-b">
+<ol class="steps" id="ai-steps"></ol>
+<pre class="stream-box" id="ai-stream"></pre>
+</div>
+</div>
+</div>
+</div>
+<details class="card help">
+<summary><i data-i="info"></i>Comment fonctionne l'IA ici ?<i data-i="chevron" class="chev"></i></summary>
+<div class="help-b">
+<div><h4>Dans le navigateur</h4><p>Un vrai modèle de langage (Qwen 2.5 ou Llama 3.2) tourne sur votre carte graphique grâce à WebGPU. Le premier chargement télécharge le modèle, ensuite il démarre en quelques secondes, même hors ligne.</p><p>Si le chargement échoue en ouvrant le fichier en double-clic, lancez <code>python -m http.server</code> dans le dossier puis ouvrez <code>http://localhost:8000</code>.</p></div>
+<div><h4>Serveur local</h4><p>Si vous avez déjà Ollama ou LM Studio, la page s'y connecte directement : modèles plus gros, meilleure qualité, toujours en local.</p><p>Bouton « Tester la connexion » pour récupérer la liste des modèles installés.</p></div>
+<div><h4>Dans l'éditeur</h4><p>Le bouton <b>✦</b> de chaque bloc permet de rédiger une partie, développer, reformuler, corriger ou résumer un paragraphe. Une action peut toujours être annulée depuis la notification.</p></div>
+</div>
+</details>
+</div>
+</section>
+<!-- ============ HISTORY ============ -->
+<section class="view hist-view" id="view-history" hidden>
+<div class="hist-wrap">
+<div class="hist-top">
+<h1>Vos rapports</h1>
+<label class="search"><i data-i="search"></i><input class="txt" id="h-search" placeholder="Rechercher…"></label>
+<button class="btn btn-line" id="h-import"><i data-i="upload"></i><span class="lbl">Importer</span></button>
+<button class="btn btn-line" id="h-backup"><i data-i="download"></i><span class="lbl">Tout sauvegarder</span></button>
+<button class="btn btn-primary" id="h-new"><i data-i="plus"></i><span class="lbl">Nouveau</span></button>
+</div>
+<div class="hist-grid" id="hist-grid"></div>
+</div>
+</section>
+</div>
+</div>
+</div>
+<div id="print-root"></div>
+<div class="toasts" id="toasts"></div>
+<div class="pop" id="pop" hidden></div>
+<input type="file" id="file-import" accept=".json,.md,.markdown,.txt,application/json,text/markdown,text/plain" hidden>
+<script>
+'use strict';
+/* =========================================================================
+Rapport Pro — fichier unique. Données stockées dans le navigateur
+(localStorage). Bibliothèques d'export et IA chargées à la demande.
+========================================================================= /
+/* ---------- Petits utilitaires ---------- /
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'id-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const clone = o => JSON.parse(JSON.stringify(o));
+function todayISO() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
+function fmtDate(iso) { if (!iso) return ''; const d = new Date(iso + 'T12:00:00'); return isNaN(d) ? iso : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); }
+function fmtRel(ts) {
+if (!ts) return '';
+const s = (Date.now() - ts) / 1000;
+if (s < 60) return "à l'instant";
+if (s < 3600) return `il y a ${Math.floor(s / 60)} min`;
+if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`;
+return new Date(ts).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function slug(s) { return (String(s || 'rapport').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w- ]+/g, '').trim().replace(/\s+/g, '_').slice(0, 60)) || 'rapport'; }
+function wordCount(t) { const m = String(t || '').match(/[\p{L}\p{N}][\p{L}\p{N}'’-]/gu); return m ? m.length : 0; }
+function normTxt(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+/* ---------- Icônes (SVG inline, nettes à toutes les résolutions) ---------- /
+const ICONS = {
+menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+x: '<path d="M18 6 6 18M6 6l12 12"/>',
+file: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8M10 9H8"/>',
+pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+sparkles: '<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0Z"/><path d="M20 3v4M22 5h-4"/>',
+history: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/>',
+save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/>',
+plus: '<path d="M5 12h14M12 5v14"/>',
+download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
+upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>',
+heading: '<path d="M6 12h12M6 20V4M18 20V4"/>',
+heading2: '<path d="M4 12h8M4 18V6M12 18V6M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1"/>',
+text: '<path d="M21 6H3M15 12H3M17 18H3"/>',
+image: '<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>',
+quote: '<path d="M3 21c3 0 7-1 7-8V5c0-1.25-.76-2.02-2-2H4c-1.25 0-2 .75-2 1.97V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .01-1 1.03V20c0 1 0 1 1 1Z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.76-2.02-2-2h-4c-1.25 0-2 .75-2 1.97V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1Z"/>',
+pagebreak: '<path d="M6 3v5h12V3M6 21v-5h12v5M3 12h2M9 12h2M15 12h2M21 12h-2"/>',
+up: '<path d="m5 12 7-7 7 7M12 19V5"/>',
+down: '<path d="M12 5v14M19 12l-7 7-7-7"/>',
+copy: '<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+trash: '<path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+grip: '<circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/>',
+wand: '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72ZM14 7l3 3M5 6v4M19 14v4M10 2v2M7 8H3M21 16h-4M11 3H9"/>',
+check: '<path d="M20 6 9 17l-5-5"/>',
+zoomin: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/>',
+zoomout: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M8 11h6"/>',
+fit: '<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>',
+eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+cpu: '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/>',
+server: '<rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><path d="M6 6h.01M6 18h.01"/>',
+zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/>',
+search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+chevron: '<path d="m6 9 6 6 6-6"/>',
+printer: '<path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>',
+info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+alert: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+sliders: '<path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/>',
+layers: '<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65M22 12.65l-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
+code: '<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>',
+hash: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
+word: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m8 12 1.5 6 2.5-4.5 2.5 4.5L16 12"/>',
+pdf: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M12 18v-6M9 15l3 3 3-3"/>',
+loader: '<path d="M21 12a9 9 0 1 1-6.22-8.56"/>',
+type: '<path d="M4 7V4h16v3M9 20h6M12 4v16"/>',
+scissors: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/>',
+minimize: '<path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/>',
+plusText: '<path d="M21 6H3M15 12H3M10 18H3M18 15v6M15 18h6"/>',
+stop: '<rect width="14" height="14" x="5" y="5" rx="2"/>'
+};
+function icon(name, cls = '') {
+return `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+}
+function hydrateIcons(root = document) {
+$$('i[data-i]', root).forEach(el => {
+const t = document.createElement('template');
+t.innerHTML = icon(el.dataset.i, el.className).trim();
+el.replaceWith(t.content.firstChild);
+});
+}
+/* ---------- Stockage local ---------- /
+const K = { hist: 'rp3_history', last: 'rp3_last', settings: 'rp3_settings', migrated: 'rp3_migrated_v2', ui: 'rp3_ui' };
+const store = {
+get(k, def) { try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch (e) { return def; } },
+set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { console.warn('Stockage impossible', e); return false; } }
+};
+function storageUsage() {
+let n = 0;
+try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); n += (k.length + (localStorage.getItem(k) || '').length) * 2; } } catch (e) { }
+return n;
+}
+/* ---------- Modèle de données ---------- /
+const ACCENTS = [
+{ id: 'blue', c: '#2448c8', n: 'Bleu' }, { id: 'teal', c: '#0f7a6c', n: 'Émeraude' },
+{ id: 'wine', c: '#9b2242', n: 'Bordeaux' }, { id: 'ink', c: '#2b2f38', n: 'Graphite' },
+{ id: 'amber', c: '#b25d09', n: 'Ambre' }, { id: 'violet', c: '#5b3cc4', n: 'Violet' }
+];
+const FONTS = [{ id: 'classic', n: 'Classique' }, { id: 'modern', n: 'Moderne' }, { id: 'elegant', n: 'Élégant' }];
+const OPTIONS = [{ id: 'cover', n: 'Page de garde' }, { id: 'toc', n: 'Sommaire' }, { id: 'numbering', n: 'Numérotation' }];
+const STYPES = {
+h1: { label: 'Titre', icon: 'heading' }, h2: { label: 'Sous-titre', icon: 'heading2' },
+p: { label: 'Paragraphe', icon: 'text' }, img: { label: 'Image', icon: 'image' },
+quote: { label: 'Encadré', icon: 'quote' }, pb: { label: 'Saut de page', icon: 'pagebreak' }
+};
+function newReport(base = {}) {
+return { id: uid(), title: '', subject: '', author: base.author || '', org: base.org || '', date: todayISO(), accent: base.accent || 'blue', font: base.font || 'classic', cover: true, toc: true, numbering: true, sections: [], created: Date.now(), updated: Date.now() };
+}
+function newSection(type, props = {}) { return { id: uid(), type, text: '', caption: '', src: '', width: 100, ...props }; }
+function normalizeReport(r) {
+r = r && typeof r === 'object' ? r : {};
+const out = newReport();
+for (const k of ['id', 'title', 'subject', 'author', 'org', 'date', 'accent', 'font', 'created', 'updated']) if (r[k] != null && r[k] !== '') out[k] = r[k];
+for (const k of ['cover', 'toc', 'numbering']) if (typeof r[k] === 'boolean') out[k] = r[k];
+if (!ACCENTS.some(a => a.id === out.accent)) out.accent = 'blue';
+if (!FONTS.some(f => f.id === out.font)) out.font = 'classic';
+out.title = String(out.title || ''); out.subject = String(out.subject || '');
+out.sections = (Array.isArray(r.sections) ? r.sections : []).map(s => {
+if (!s || typeof s !== 'object') return null;
+// Ancien format (v2) : heading / paragraph / image
+if (s.type === 'heading') return newSection('h1', { id: s.id || uid(), text: s.title || '' });
+if (s.type === 'paragraph') return newSection('p', { id: s.id || uid(), text: s.content || '' });
+if (s.type === 'image') return newSection('img', { id: s.id || uid(), src: s.image || '', caption: s.title || '' });
+if (!STYPES[s.type]) return null;
+return newSection(s.type, { id: s.id || uid(), text: String(s.text || ''), caption: String(s.caption || ''), src: String(s.src || ''), width: Number(s.width) || 100 });
+}).filter(Boolean);
+return out;
+}
+function isEmptyReport(r) { return !r.title.trim() && !r.subject.trim() && r.sections.length === 0; }
+function reportWords(r) {
+let n = wordCount(r.title) + wordCount(r.subject);
+for (const s of r.sections) n += wordCount(s.text) + wordCount(s.caption);
+return n;
+}
+/* ---------- État de l'application ---------- /
+const DEFAULT_SETTINGS = { engine: null, wlModel: 'Qwen2.5-1.5B-Instruct', serverUrl: 'http://localhost:11434/v1', serverModel: '', serverKey: '', temperature: 0.7 };
+let S = { ...DEFAULT_SETTINGS };
+const app = {
+report: null, history: [], view: 'editor', tab: 'edit', zoom: 'fit', focusId: null,
+streamingId: null, ai: { busy: false, stopped: false, abort: null },
+ui: { aiLength: 'moyen', aiTarget: 'new', closed: {} }
+};
+function saveSettings() { store.set(K.settings, S); }
+/* ---------- Enregistrement automatique ---------- /
+let saveTimer = null, previewTimer = null;
+function setSaveState(state) {
+const el = $('#save-state');
+el.className = 'save-state ' + state;
+if (state === 'saved') el.innerHTML = icon('check') + 'Enregistré · ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+else if (state === 'pending') el.textContent = 'Modifications…';
+else if (state === 'error') el.innerHTML = icon('alert') + 'Échec de l'enregistrement';
+else el.textContent = 'Brouillon vide';
+}
+function touch(opts = {}) {
+app.report.updated = Date.now();
+setSaveState('pending');
+clearTimeout(saveTimer);
+saveTimer = setTimeout(persist, 600);
+if (opts.preview !== false) schedulePreview();
+if (opts.title) updateTopTitle();
+}
+function persist() {
+clearTimeout(saveTimer);
+const r = app.report;
+if (isEmptyReport(r)) { setSaveState('idle'); return true; }
+const copy = clone(r);
+const i = app.history.findIndex(x => x.id === r.id);
+if (i >= 0) app.history[i] = copy; else app.history.unshift(copy);
+const ok = store.set(K.hist, app.history);
+store.set(K.last, r.id);
+setSaveState(ok ? 'saved' : 'error');
+if (!ok) toast("Le stockage du navigateur est plein. Supprimez d'anciens rapports ou des images, ou exportez une sauvegarde.", 'err', { timeout: 8000 });
+updateMeter();
+return ok;
+}
+function updateMeter() {
+const used = storageUsage(), cap = 5 * 1024 * 1024;
+$('#meter-bar').style.width = Math.min(100, used / cap * 100).toFixed(1) + '%';
+$('#meter-label').textContent = `Stockage : ${(used / 1048576).toFixed(1).replace('.', ',')} Mo sur ≈ 5 Mo`;
+}
+function updateTopTitle() {
+const t = app.report.title.trim() || 'Sans titre';
+$('#top-title').textContent = t;
+document.title = (app.report.title.trim() ? app.report.title.trim() + ' · ' : '') + 'Rapport Pro';
+}
+/* ---------- Toasts ---------- /
+function toast(msg, kind = 'info', opts = {}) {
+const box = $('#toasts');
+const el = document.createElement('div');
+el.className = 'toast ' + kind;
+const ic = { ok: 'check', err: 'alert', warn: 'alert', info: 'info' }[kind] || 'info';
+el.innerHTML = icon(ic) + `<span>${esc(msg)}</span>`;
+if (opts.action) {
+const b = document.createElement('button');
+b.textContent = opts.action.label;
+b.onclick = () => { el.remove(); opts.action.fn(); };
+el.appendChild(b);
+}
+const x = document.createElement('button');
+x.innerHTML = icon('x'); x.setAttribute('aria-label', 'Fermer');
+x.onclick = () => el.remove();
+el.appendChild(x);
+box.appendChild(el);
+while (box.children.length > 4) box.firstChild.remove();
+setTimeout(() => el.remove(), opts.timeout || (opts.action ? 9000 : 4200));
+}
+/* ---------- Popover (menus) ---------- /
+function openPop(anchor, items) {
+const pop = $('#pop');
+pop.innerHTML = items.map((it, i) => {
+if (it.sep) return '<div class="pop-sep"></div>';
+if (it.label && !it.fn) return `<div class="pop-label">${esc(it.label)}</div>`;
+return `<button class="pop-item ${it.ai ? 'ai' : ''}" data-i="${i}" ${it.disabled ? 'disabled' : ''}>${icon(it.icon || 'file')}<span><b>${esc(it.title)}</b>${it.hint ? `<small>${esc(it.hint)}</small>` : ''}</span></button>`;
+}).join('');
+pop.hidden = false;
+$$('.pop-item', pop).forEach(b => b.onclick = e => { e.stopPropagation(); closePop(); items[+b.dataset.i].fn(); });
+const r = anchor.getBoundingClientRect();
+const pw = pop.offsetWidth, ph = pop.offsetHeight;
+let left = Math.min(window.innerWidth - pw - 8, Math.max(8, r.right - pw));
+let top = r.bottom + 6;
+if (top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 6);
+pop.style.left = left + 'px'; pop.style.top = top + 'px';
+pop._anchor = anchor;
+}
+function closePop() { const p = $('#pop'); p.hidden = true; p._anchor = null; }
+document.addEventListener('mousedown', e => { const p = $('#pop'); if (!p.hidden && !p.contains(e.target) && !(p._anchor && p._anchor.contains(e.target))) closePop(); });
+window.addEventListener('resize', closePop);
+/* =========================================================================
+NAVIGATION
+========================================================================= /
+function navigate(view) {
+app.view = view;
+for (const v of ['editor', 'ai', 'history']) $('#view-' + v).hidden = v !== view;
+$$('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.nav === view));
+closeSidebar();
+if (view === 'history') renderHistory();
+if (view === 'ai') renderAIEngines();
+if (view === 'editor') { requestAnimationFrame(() => { autosizeAll(); fitZoom(); }); }
+}
+function openSidebar() { $('#sidebar').classList.add('open'); $('#overlay').classList.add('on'); }
+function closeSidebar() { $('#sidebar').classList.remove('open'); $('#overlay').classList.remove('on'); }
+function setTab(tab) {
+app.tab = tab;
+$('#editor').dataset.tab = tab;
+$$('.mob-tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+requestAnimationFrame(() => { if (tab === 'edit') autosizeAll(); else { renderPreview(); fitZoom(); } });
+}
+/* =========================================================================
+ÉDITEUR
+========================================================================= /
+function renderEditor() {
+const r = app.report;
+$$('[data-meta]').forEach(el => { el.value = r[el.dataset.meta] || ''; });
+renderLayout();
+renderSections();
+renderPreview();
+updateTopTitle();
+setSaveState(isEmptyReport(r) ? 'idle' : 'saved');
+}
+function renderLayout() {
+const r = app.report;
+$('#swatches').innerHTML = ACCENTS.map(a => `<button class="sw ${r.accent === a.id ? 'on' : ''}" data-accent="${a.id}" title="${a.n}" style="background:${a.c}"></button>`).join('');
+$('#fonts').innerHTML = FONTS.map(f => `<button data-font="${f.id}" class="${r.font === f.id ? 'on' : ''}">${f.n}</button>`).join('');
+$('#toggles').innerHTML = OPTIONS.map(o => `<button class="tog ${r[o.id] ? 'on' : ''}" data-opt="${o.id}"><i></i>${o.n}</button>`).join('');
+}
+function sectionCard(s, i, n) {
+const t = STYPES[s.type];
+const streaming = app.streamingId === s.id;
+const canAI = ['h1', 'h2', 'p', 'quote'].includes(s.type);
+let body = '';
+switch (s.type) {
+case 'h1': body = `<input class="sec-in h1" data-f="text" value="${esc(s.text)}" placeholder="Titre de la partie">`; break;
+case 'h2': body = `<input class="sec-in h2" data-f="text" value="${esc(s.text)}" placeholder="Titre de la sous-partie">`; break;
+case 'p': body = `<textarea class="sec-ta" data-f="text" rows="3" ${streaming ? 'readonly' : ''} placeholder="Écrivez votre texte… (gras, italique, listes avec « - »)">${esc(s.text)}</textarea>`; break;
+case 'quote': body = `<textarea class="sec-ta" data-f="text" rows="2" ${streaming ? 'readonly' : ''} placeholder="Note, remarque importante, définition…">${esc(s.text)}</textarea>`; break;
+case 'img': body = `<div class="img-row">
+<label class="img-drop ${s.src ? 'has' : ''}" title="Choisir ou déposer une image">${s.src ? `<img src="${s.src}" alt="">` : icon('image') + '<span>Choisir ou<br>déposer</span>'}<input type="file" accept="image/" data-f="file" hidden></label>
+<div class="img-opts">
+<input class="txt sm" data-f="caption" value="${esc(s.caption)}" placeholder="Légende (optionnel)">
+<label class="range"><span>Largeur</span><input type="range" min="25" max="100" step="5" value="${s.width || 100}" data-f="width"><b>${s.width || 100}%</b></label>
+</div></div>`; break;
+case 'pb': body = `<div class="pb-line">Nouvelle page</div>`; break;
+}
+return `<article class="sec t-${s.type} ${streaming ? 'streaming' : ''}" data-id="${s.id}">
+<header class="sec-head">
+<span class="grip" title="Glisser pour déplacer">${icon('grip')}</span>
+<span class="pill">${icon(t.icon)}${t.label}</span><span class="sp"></span>
+${canAI ? `<button class="ib ai" data-act="ai" title="Actions IA">${icon('sparkles')}</button>` : ''}
+<button class="ib" data-act="up" title="Monter" ${i === 0 ? 'disabled' : ''}>${icon('up')}</button>
+<button class="ib" data-act="down" title="Descendre" ${i === n - 1 ? 'disabled' : ''}>${icon('down')}</button>
+<button class="ib" data-act="dup" title="Dupliquer">${icon('copy')}</button>
+<button class="ib del" data-act="del" title="Supprimer">${icon('trash')}</button>
+</header>
+<div class="sec-body">${body}</div>
+</article>`;
+}
+function renderSections() {
+const list = $('#sections'), secs = app.report.sections;
+if (!secs.length) {
+list.innerHTML = `<div class="empty">${icon('layers')}<b>Le rapport est vide</b><p>Ajoutez des blocs avec la barre du bas, ou laissez Chati IA rédiger un premier brouillon.</p><button class="btn btn-ai btn-sm" data-goto-ai>${icon('sparkles')}Générer avec l'IA</button></div>`;
+} else {
+list.innerHTML = secs.map((s, i) => sectionCard(s, i, secs.length)).join('');
+}
+$('#sec-count').textContent = secs.length ? `${secs.length} bloc${secs.length > 1 ? 's' : ''}` : '';
+requestAnimationFrame(autosizeAll);
+}
+function autosize(ta) { if (!ta || !ta.offsetParent) return; ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight + 2, 640) + 'px'; }
+function autosizeAll() { $$('#sections .sec-ta').forEach(autosize); }
+function findSec(id) { return app.report.sections.find(s => s.id === id); }
+function secIndex(id) { return app.report.sections.findIndex(s => s.id === id); }
+function addSection(type, afterId) {
+const secs = app.report.sections;
+const s = newSection(type);
+let idx = afterId !== undefined ? secIndex(afterId) : secIndex(app.focusId);
+if (idx < 0) secs.push(s); else secs.splice(idx + 1, 0, s);
+renderSections(); touch();
+app.focusId = s.id;
+requestAnimationFrame(() => {
+const card = $(`.sec[data-id="${s.id}"]`);
+if (!card) return;
+card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+const f = card.querySelector('[data-f="text"], [data-f="caption"]');
+if (type === 'img') card.querySelector('input[type=file]')?.click();
+else if (f) f.focus({ preventScroll: true });
+});
+if (window.innerWidth <= 860 && app.tab !== 'edit') setTab('edit');
+return s;
+}
+function moveSection(id, dir) {
+const a = app.report.sections, i = secIndex(id), j = i + dir;
+if (i < 0 || j < 0 || j >= a.length) return;
+[a[i], a[j]] = [a[j], a[i]];
+renderSections(); touch();
+requestAnimationFrame(() => $(`.sec[data-id="${id}"]`)?.scrollIntoView({ block: 'nearest' }));
+}
+function deleteSection(id) {
+const i = secIndex(id); if (i < 0) return;
+if (app.streamingId === id) stopJob();
+const [removed] = app.report.sections.splice(i, 1);
+renderSections(); touch();
+toast('Bloc supprimé', 'info', { action: { label: 'Annuler', fn: () => { app.report.sections.splice(Math.min(i, app.report.sections.length), 0, removed); renderSections(); touch(); } } });
+}
+function duplicateSection(id) {
+const i = secIndex(id); if (i < 0) return;
+const c = { ...clone(app.report.sections[i]), id: uid() };
+app.report.sections.splice(i + 1, 0, c);
+renderSections(); touch();
+}
+/* --- Images : redimensionnées et compressées pour tenir dans le stockage --- /
+function readFileAsDataURL(file) { return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => rej(fr.error); fr.readAsDataURL(file); }); }
+function loadImage(src) { return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('Image illisible')); im.src = src; }); }
+async function processImage(file) {
+const raw = await readFileAsDataURL(file);
+const img = await loadImage(raw);
+const max = 1800;
+const w0 = img.naturalWidth || 800, h0 = img.naturalHeight || 600;
+const k = Math.min(1, max / Math.max(w0, h0));
+const w = Math.max(1, Math.round(w0 * k)), h = Math.max(1, Math.round(h0 * k));
+const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+const ctx = cv.getContext('2d');
+const keepPng = /png|gif|svg|webp/.test(file.type);
+if (keepPng) {
+ctx.drawImage(img, 0, 0, w, h);
+const png = cv.toDataURL('image/png');
+if (png.length < 1100000) return png;
+}
+ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+return cv.toDataURL('image/jpeg', 0.86);
+}
+async function setImage(id, file) {
+if (!file || !/^image//.test(file.type)) { toast('Ce fichier n'est pas une image.', 'warn'); return; }
+try {
+const s = findSec(id); if (!s) return;
+s.src = await processImage(file);
+if (!s.caption) s.caption = file.name.replace(/.[^.]+$/, '').replace(/[_-]+/g, ' ');
+renderSections(); touch();
+} catch (e) { toast("Impossible de lire l'image : " + e.message, 'err'); }
+}
+/* --- Événements de l'éditeur (délégation) --- /
+function bindEditor() {
+$$('[data-meta]').forEach(el => el.addEventListener('input', () => {
+app.report[el.dataset.meta] = el.value;
+touch({ title: el.dataset.meta === 'title' });
+}));
+$('#swatches').addEventListener('click', e => { const b = e.target.closest('[data-accent]'); if (!b) return; app.report.accent = b.dataset.accent; renderLayout(); touch(); });
+$('#fonts').addEventListener('click', e => { const b = e.target.closest('[data-font]'); if (!b) return; app.report.font = b.dataset.font; renderLayout(); touch(); });
+$('#toggles').addEventListener('click', e => { const b = e.target.closest('[data-opt]'); if (!b) return; app.report[b.dataset.opt] = !app.report[b.dataset.opt]; renderLayout(); touch(); });
+$$('[data-collapse]').forEach(b => b.addEventListener('click', () => {
+const id = b.dataset.collapse, card = $('#' + id);
+card.classList.toggle('closed');
+app.ui.closed[id] = card.classList.contains('closed'); store.set(K.ui, app.ui);
+}));
+$('#addbar').addEventListener('click', e => { const b = e.target.closest('[data-add]'); if (b) addSection(b.dataset.add); });
+const list = $('#sections');
+list.addEventListener('input', e => {
+const f = e.target.dataset.f; if (!f || f === 'file') return;
+const card = e.target.closest('.sec'); const s = card && findSec(card.dataset.id); if (!s) return;
+if (f === 'width') { s.width = +e.target.value; e.target.nextElementSibling.textContent = s.width + '%'; }
+else s[f] = e.target.value;
+if (e.target.classList.contains('sec-ta')) autosize(e.target);
+touch();
+});
+list.addEventListener('change', e => {
+if (e.target.dataset.f !== 'file') return;
+const card = e.target.closest('.sec'); if (card) setImage(card.dataset.id, e.target.files[0]);
+});
+list.addEventListener('focusin', e => { const c = e.target.closest('.sec'); if (c) app.focusId = c.dataset.id; });
+list.addEventListener('click', e => {
+if (e.target.closest('[data-goto-ai]')) { navigate('ai'); $('#ai-topic').focus(); return; }
+const b = e.target.closest('[data-act]'); if (!b) return;
+const id = b.closest('.sec').dataset.id;
+app.focusId = id;
+({ up: () => moveSection(id, -1), down: () => moveSection(id, 1), dup: () => duplicateSection(id), del: () => deleteSection(id), ai: () => openSectionAIMenu(b, id) })[b.dataset.act]?.();
+});
+list.addEventListener('keydown', e => {
+if (e.key === 'Enter' && e.target.classList.contains('sec-in')) { e.preventDefault(); const c = e.target.closest('.sec'); addSection('p', c.dataset.id); }
+});
+// Glisser-déposer : réorganisation des blocs + dépôt d'image
+let dragId = null;
+list.addEventListener('mousedown', e => { const g = e.target.closest('.grip'); if (g) g.closest('.sec').draggable = true; });
+list.addEventListener('dragstart', e => {
+const c = e.target.closest('.sec');
+if (!c || !c.draggable) return;
+dragId = c.dataset.id; c.classList.add('dragging');
+e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragId);
+});
+const clearDrop = () => $$('.sec', list).forEach(c => c.classList.remove('drop-before', 'drop-after'));
+list.addEventListener('dragend', () => { $$('.sec', list).forEach(c => { c.draggable = false; c.classList.remove('dragging'); }); clearDrop(); dragId = null; });
+list.addEventListener('dragover', e => {
+if (!dragId) {
+const dz = e.target.closest('.img-drop');
+if (dz && e.dataTransfer.types.includes('Files')) { e.preventDefault(); dz.classList.add('over'); }
+return;
+}
+const c = e.target.closest('.sec'); if (!c || c.dataset.id === dragId) return;
+e.preventDefault();
+const r = c.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+clearDrop(); c.classList.add(after ? 'drop-after' : 'drop-before');
+});
+list.addEventListener('dragleave', e => { const dz = e.target.closest('.img-drop'); if (dz) dz.classList.remove('over'); });
+list.addEventListener('drop', e => {
+if (!dragId) {
+const dz = e.target.closest('.img-drop');
+if (dz && e.dataTransfer.files.length) { e.preventDefault(); dz.classList.remove('over'); setImage(dz.closest('.sec').dataset.id, e.dataTransfer.files[0]); }
+return;
+}
+e.preventDefault();
+const c = e.target.closest('.sec'); if (!c) return;
+const after = c.classList.contains('drop-after');
+const a = app.report.sections, from = secIndex(dragId);
+const [m] = a.splice(from, 1);
+let to = secIndex(c.dataset.id); if (after) to++;
+a.splice(to, 0, m);
+renderSections(); touch();
+});
+document.addEventListener('mouseup', () => { if (!dragId) $$('.sec[draggable="true"]', list).forEach(c => c.draggable = false); });
+}
+/* =========================================================================
+RENDU DU DOCUMENT (aperçu, impression, PDF)
+========================================================================= /
+function inlineMD(s) {
+let h = esc(s);
+h = h.replace(/**(.+?)**/g, '<strong>$1</strong>');
+h = h.replace(/(^|[^\w])*(?!\s)([^]+?)*(?!*)/g, '$1<em>$2</em>');
+h = h.replace(/(^|\W)_(?!\s)([^_]+?)_(?=\W|$)/g, '$1<em>$2</em>');
+return h;
+}
+function parseBlocks(text) {
+const lines = String(text || '').replace(/\r/g, '').split('
+');
+const blocks = []; let para = [], list = null;
+const flushP = () => { if (para.length) { blocks.push({ t: 'p', lines: para }); para = []; } };
+const flushL = () => { if (list) { blocks.push(list); list = null; } };
+for (const raw of lines) {
+const line = raw.replace(/\s+$/, ''); let m;
+if (!line.trim()) { flushP(); flushL(); continue; }
+if ((m = line.match(/^\s[-•–]\s+(.)$/))) { flushP(); if (!list || list.t !== 'ul') { flushL(); list = { t: 'ul', items: [] }; } list.items.push(m[1]); continue; }
+if ((m = line.match(/^\s\d+[.)]\s+(.)$/))) { flushP(); if (!list || list.t !== 'ol') { flushL(); list = { t: 'ol', items: [] }; } list.items.push(m[1]); continue; }
+flushL(); para.push(line.trim());
+}
+flushP(); flushL();
+return blocks;
+}
+function blocksHTML(text) {
+return parseBlocks(text).map(b => b.t === 'p'
+? `<p>${b.lines.map(inlineMD).join('<br>')}</p>`
+: `<${b.t}>${b.items.map(x => `<li>${inlineMD(x)}</li>`).join('')}</${b.t}>`).join('');
+}
+function accentOf(r) { return (ACCENTS.find(a => a.id === r.accent) || ACCENTS[0]).c; }
+function tint(hex, k) { // mélange avec du blanc (k = part de la couleur)
+const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v * k + 255 * (1 - k)));
+return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+function headingNumbers(r) {
+let n1 = 0, n2 = 0; const map = {};
+for (const s of r.sections) {
+if (s.type === 'h1') { n1++; n2 = 0; map[s.id] = n1 + '.'; }
+else if (s.type === 'h2') { n2++; map[s.id] = (n1 ? n1 + '.' : '') + n2 + (n1 ? '' : '.'); }
+}
+return map;
+}
+function buildDoc(r, mode = 'screen') {
+const screen = mode === 'screen';
+const nums = r.numbering ? headingNumbers(r) : {};
+const title = r.title.trim() || (screen ? 'Titre du rapport' : 'Rapport');
+const metaBits = [r.author && esc(r.author), r.date && esc(fmtDate(r.date))].filter(Boolean);
+if (!metaBits.length && screen) metaBits.push('<span style="opacity:.6">Auteur · date</span>');
+// En-tête ou page de garde
+let head = '';
+const sheets = [];
+if (r.cover) {
+sheets.push(`<section class="sheet cover"><div class="cover-band"></div><div class="cover-in">
+${r.org ? `<div class="d-org">${esc(r.org)}</div>` : ''}
+<div class="cover-mid"><h1 class="d-title">${inlineMD(title)}</h1>${r.subject ? `<div class="d-sub">${inlineMD(r.subject)}</div>` : ''}<div class="cover-rule"></div></div>
+<div class="cover-foot"><div>${r.author ? `<small>Rédigé par</small><b>${esc(r.author)}</b>` : ''}</div><div style="text-align:right">${r.date ? `<small>Date</small><b>${esc(fmtDate(r.date))}</b>` : ''}</div></div>
+</div></section>`);
+} else {
+head = `<header class="d-head">${r.org ? `<div class="d-org">${esc(r.org)}</div>` : ''}<h1 class="d-title">${inlineMD(title)}</h1>${r.subject ? `<div class="d-sub">${inlineMD(r.subject)}</div>` : ''}${metaBits.length ? `<div class="d-meta">${metaBits.map(m => `<span>${m}</span>`).join('')}</div>` : ''}</header>`;
+}
+// Sommaire
+let toc = '';
+const heads = r.sections.filter(s => (s.type === 'h1' || s.type === 'h2'));
+if (r.toc && heads.length) {
+toc = `<nav class="d-toc"><h4>Sommaire</h4><ol>${heads.map(s => `<li class="${s.type === 'h2' ? 'l2' : 'l1'}">${nums[s.id] ? `<span class="n">${nums[s.id]}</span>` : ''}<span>${inlineMD(s.text || 'Sans titre')}</span><span class="lead"></span></li>`).join('')}</ol></nav>`;
+}
+// Contenu, découpé aux sauts de page
+const pages = [[]];
+let fig = 0;
+for (const s of r.sections) {
+const cur = pages[pages.length - 1];
+const stream = screen && app.streamingId === s.id ? ' d-stream' : '';
+switch (s.type) {
+case 'h1': cur.push(`<h2 class="d-h1">${nums[s.id] ? `<span class="d-num">${nums[s.id]}</span>` : ''}${inlineMD(s.text || (screen ? 'Titre de partie' : ''))}</h2>`); break;
+case 'h2': cur.push(`<h3 class="d-h2">${nums[s.id] ? `<span class="d-num">${nums[s.id]}</span>` : ''}${inlineMD(s.text || (screen ? 'Sous-titre' : ''))}</h3>`); break;
+case 'p':
+if (s.text.trim()) cur.push(`<div class="d-p${stream}">${blocksHTML(s.text)}</div>`);
+else if (screen) cur.push(`<p class="d-ghost${stream}">${stream ? 'Rédaction en cours…' : 'Paragraphe vide'}</p>`);
+break;
+case 'quote':
+if (s.text.trim()) cur.push(`<aside class="d-quote${stream}">${blocksHTML(s.text)}</aside>`);
+else if (screen) cur.push(`<aside class="d-quote"><p class="d-ghost">Encadré vide</p></aside>`);
+break;
+case 'img':
+if (s.src) { fig++; cur.push(`<figure class="d-fig"><img src="${s.src}" alt="${esc(s.caption)}" style="width:${s.width || 100}%">${s.caption ? `<figcaption>Figure ${fig} : ${esc(s.caption)}</figcaption>` : ''}</figure>`); }
+else if (screen) cur.push(`<div class="d-ghost-img">Image non choisie</div>`);
+break;
+case 'pb': pages.push([]); break;
+}
+}
+pages.forEach((p, i) => {
+const pre = i === 0 ? head + toc : '';
+const foot = mode !== 'print' ? `<div class="sheet-foot"><span>${esc(r.title.trim())}</span><span>${esc(r.org || '')}</span></div>` : '';
+if (!pre && !p.length && i > 0 && !screen) return;
+sheets.push(`<section class="sheet">${pre}${p.join('')}${foot}</section>`);
+});
+const fontCls = r.font === 'modern' ? 'f-modern' : r.font === 'elegant' ? 'f-elegant' : 'f-classic';
+const ac = accentOf(r);
+return `<div class="doc ${fontCls}" style="--doc-accent:${ac};--doc-accent-soft:${tint(ac, .06)};--doc-accent-line:${tint(ac, .25)}">${sheets.join('')}</div>`;
+}
+function schedulePreview() {
+if (previewTimer) return;
+previewTimer = setTimeout(() => { previewTimer = null; renderPreview(); }, app.ai.busy ? 260 : 120);
+}
+function renderPreview() {
+const z = $('#zoomer');
+if (window.innerWidth <= 860 && app.tab !== 'preview') { updateStats(); return; }
+z.innerHTML = buildDoc(app.report, 'screen');
+applyZoom();
+updateStats();
+}
+function updateStats() {
+const r = app.report, w = reportWords(r);
+const imgs = r.sections.filter(s => s.type === 'img' && s.src).length;
+const pbs = r.sections.filter(s => s.type === 'pb').length;
+const pages = Math.max(1, Math.ceil(w / 420 + imgs * 0.35)) + (r.cover ? 1 : 0) + Math.floor(pbs * 0.5);
+$('#st-words').textContent = w.toLocaleString('fr-FR');
+$('#st-pages').textContent = pages;
+$('#st-read').textContent = Math.max(1, Math.round(w / 230));
+}
+/* --- Zoom de l'aperçu --- /
+const SHEET_PX = 793.7;
+function fitScale() { const st = $('#stage'); const avail = st.clientWidth - (window.innerWidth <= 860 ? 16 : 48); return Math.max(0.25, Math.min(1.25, avail / SHEET_PX)); }
+function applyZoom() {
+const z = app.zoom === 'fit' ? fitScale() : app.zoom;
+$('#zoomer').style.zoom = z;
+$('#zoom-val').textContent = Math.round(z * 100) + '%';
+}
+function fitZoom() { app.zoom = 'fit'; applyZoom(); }
+function stepZoom(d) { const cur = app.zoom === 'fit' ? fitScale() : app.zoom; app.zoom = Math.max(0.3, Math.min(2, Math.round((cur + d) * 10) / 10)); applyZoom(); }
+/* =========================================================================
+EXPORTS
+========================================================================= /
+const libs = {};
+function loadScript(urls, test) {
+const key = urls[0];
+if (test()) return Promise.resolve();
+if (libs[key]) return libs[key];
+libs[key] = (async () => {
+let lastErr;
+for (const url of urls) {
+try {
+await new Promise((res, rej) => { const s = document.createElement('script'); s.src = url; s.async = true; s.onload = res; s.onerror = () => rej(new Error('Échec du chargement : ' + url)); document.head.appendChild(s); });
+if (test()) return;
+} catch (e) { lastErr = e; }
+}
+libs[key] = null;
+throw lastErr || new Error('Bibliothèque indisponible');
+})();
+return libs[key];
+}
+const LIB = {
+html2pdf: () => loadScript(['https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js', 'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js'], () => typeof window.html2pdf === 'function'),
+docx: () => loadScript(['https://cdn.jsdelivr.net/npm/docx@9.13.0/dist/index.iife.js', 'https://unpkg.com/docx@9.13.0/dist/index.iife.js'], () => !!(window.docx && window.docx.Document))
+};
+function fileName(ext) { return slug(app.report.title || 'rapport') + (ext ? '.' + ext : ''); }
+function downloadBlob(blob, name) {
+const a = document.createElement('a');
+a.href = URL.createObjectURL(blob); a.download = name;
+document.body.appendChild(a); a.click(); a.remove();
+setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function waitImages(root) { return Promise.all($$('img', root).map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; }))); }
+function openExportMenu(anchor) {
+openPop(anchor, [
+{ label: 'Exporter ce rapport' },
+{ icon: 'printer', title: 'PDF haute qualité', hint: 'Via l'impression : texte net et sélectionnable', fn: printDoc },
+{ icon: 'pdf', title: 'Télécharger en PDF', hint: 'Fichier direct, rendu image HD', fn: exportPDF },
+{ icon: 'word', title: 'Word (.docx)', hint: 'Modifiable, images incluses', fn: exportDocx },
+{ icon: 'hash', title: 'Markdown (.md)', hint: 'Texte brut structuré', fn: exportMarkdown },
+{ sep: true },
+{ icon: 'code', title: 'Sauvegarde (.json)', hint: 'Pour réimporter plus tard', fn: () => exportJSON([app.report], fileName('json')) }
+]);
+}
+function guardEmpty() { if (isEmptyReport(app.report)) { toast('Le rapport est vide : ajoutez du contenu avant d'exporter.', 'warn'); return true; } return false; }
+async function printDoc() {
+if (guardEmpty()) return;
+persist();
+const root = $('#print-root');
+root.innerHTML = buildDoc(app.report, 'print');
+await waitImages(root);
+try { await document.fonts?.ready; } catch (e) { }
+const t = document.title; document.title = fileName('');
+window.print();
+document.title = t;
+}
+async function exportPDF() {
+if (guardEmpty()) return;
+persist();
+toast('Préparation du PDF…', 'info', { timeout: 2500 });
+try { await LIB.html2pdf(); } catch (e) { toast("La bibliothèque PDF n'a pas pu être chargée (connexion internet requise). Utilisez « PDF haute qualité » à la place.", 'err', { timeout: 8000 }); return; }
+const r = app.report;
+const host = document.createElement('div');
+host.className = 'pdf-host';
+host.innerHTML = buildDoc(r, 'pdf');
+const doc = host.firstElementChild;
+$$('.sheet', doc).forEach((sh, i) => {
+sh.style.cssText = 'width:210mm;min-height:0;padding:0 20mm;margin:0;box-shadow:none;overflow:visible';
+if (i > 0) sh.classList.add('pdf-break');
+sh.querySelector('.sheet-foot')?.remove();
+});
+const cov = doc.querySelector('.cover');
+if (cov) cov.style.cssText = 'width:210mm;height:262mm;min-height:0;padding:0;margin:0;box-shadow:none;overflow:hidden';
+document.body.appendChild(host);
+await waitImages(host);
+try { await document.fonts?.ready; } catch (e) { }
+try {
+const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('délai dépassé')), 90000));
+await Promise.race([timeout, html2pdf().set({
+margin: [14, 0, 16, 0], filename: fileName('pdf'),
+image: { type: 'jpeg', quality: 0.96 },
+html2canvas: { scale: 2.5, useCORS: true, backgroundColor: '#ffffff', logging: false },
+jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+pagebreak: { mode: ['css', 'legacy'], before: '.pdf-break', avoid: ['.d-h1', '.d-h2', '.d-fig', 'li', '.d-quote', '.d-toc li', 'p'] }
+}).from(doc).toPdf().get('pdf').then(pdf => {
+const n = pdf.internal.getNumberOfPages(), start = r.cover ? 2 : 1;
+pdf.setFontSize(8); pdf.setTextColor(150);
+for (let i = start; i <= n; i++) { pdf.setPage(i); pdf.text(`${i} / ${n}`, 200, 289, { align: 'right' }); }
+}).save()]);
+toast('PDF téléchargé.', 'ok');
+} catch (e) {
+console.error(e); toast('Erreur pendant la création du PDF : ' + e.message, 'err');
+} finally { host.remove(); }
+}
+function dataURLtoBytes(url) { const b = atob(url.split(',')[1] || ''); const u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+async function exportDocx() {
+if (guardEmpty()) return;
+persist();
+try { await LIB.docx(); } catch (e) { toast("La bibliothèque Word n'a pas pu être chargée (connexion internet requise).", 'err'); return; }
+const D = window.docx, r = app.report;
+const accent = accentOf(r).slice(1).toUpperCase();
+const fonts = { classic: ['Georgia', 'Georgia'], modern: ['Calibri', 'Calibri'], elegant: ['Georgia', 'Calibri'] }[r.font] || ['Georgia', 'Georgia'];
+const nums = r.numbering ? headingNumbers(r) : {};
+const runs = (text, base = {}) => {
+const out = [], re = /(**[^]+?**|*[^\s][^]?*)/g;
+let last = 0, m; const t = String(text || '');
+while ((m = re.exec(t))) {
+if (m.index > last) out.push(new D.TextRun({ text: t.slice(last, m.index), ...base }));
+const tok = m[0];
+if (tok.startsWith('')) out.push(new D.TextRun({ text: tok.slice(2, -2), bold: true, ...base }));
+else out.push(new D.TextRun({ text: tok.slice(1, -1), italics: true, ...base }));
+last = m.index + tok.length;
+}
+if (last < t.length) out.push(new D.TextRun({ text: t.slice(last), ...base }));
+return out.length ? out : [new D.TextRun({ text: '', ...base })];
+};
+let olInstance = 0;
+const textParas = (text, extra = {}, base = {}) => parseBlocks(text).flatMap(b => {
+if (b.t === 'p') {
+const children = [];
+b.lines.forEach((ln, i) => { if (i) children.push(new D.TextRun({ text: '', break: 1 })); children.push(...runs(ln, base)); });
+return [new D.Paragraph({ children, alignment: D.AlignmentType.JUSTIFIED, spacing: { after: 140 }, ...extra })];
+}
+if (b.t === 'ul') return b.items.map(it => new D.Paragraph({ children: runs(it, base), bullet: { level: 0 }, spacing: { after: 60 }, ...extra }));
+olInstance++;
+return b.items.map(it => new D.Paragraph({ children: runs(it, base), numbering: { reference: 'num', level: 0, instance: olInstance }, spacing: { after: 60 }, ...extra }));
+});
+const children = [];
+const title = r.title.trim() || 'Rapport';
+if (r.cover) {
+children.push(new D.Paragraph({ spacing: { before: 2400 }, children: r.org ? [new D.TextRun({ text: r.org.toUpperCase(), bold: true, color: accent, size: 20, characterSpacing: 40 })] : [] }));
+children.push(new D.Paragraph({ spacing: { before: 2400, after: 200 }, children: [new D.TextRun({ text: title, bold: true, size: 64, font: fonts[0], color: '16181D' })] }));
+if (r.subject) children.push(new D.Paragraph({ spacing: { after: 300 }, children: [new D.TextRun({ text: r.subject, size: 30, color: '5D626B', font: fonts[1] })] }));
+children.push(new D.Paragraph({ border: { bottom: { style: D.BorderStyle.SINGLE, size: 24, color: accent, space: 1 } }, indent: { right: 7200 }, children: [] }));
+children.push(new D.Paragraph({ spacing: { before: 4200 }, children: [new D.TextRun({ text: r.author ? 'Rédigé par ' + r.author : '', size: 22, color: '40444C' })] }));
+if (r.date) children.push(new D.Paragraph({ children: [new D.TextRun({ text: fmtDate(r.date), size: 22, color: '7B7F88' })] }));
+children.push(new D.Paragraph({ children: [new D.PageBreak()] }));
+} else {
+if (r.org) children.push(new D.Paragraph({ children: [new D.TextRun({ text: r.org.toUpperCase(), bold: true, color: accent, size: 18, characterSpacing: 30 })] }));
+children.push(new D.Paragraph({ spacing: { after: 80 }, children: [new D.TextRun({ text: title, bold: true, size: 48, font: fonts[0], color: '16181D' })] }));
+if (r.subject) children.push(new D.Paragraph({ children: [new D.TextRun({ text: r.subject, size: 26, color: '5D626B' })] }));
+const meta = [r.author, r.date && fmtDate(r.date)].filter(Boolean).join(' • ');
+children.push(new D.Paragraph({ spacing: { before: 120, after: 360 }, border: { bottom: { style: D.BorderStyle.SINGLE, size: 12, color: accent, space: 8 } }, children: [new D.TextRun({ text: meta, size: 18, color: '7B7F88' })] }));
+}
+const heads = r.sections.filter(s => s.type === 'h1' || s.type === 'h2');
+if (r.toc && heads.length) {
+children.push(new D.Paragraph({ spacing: { after: 160 }, children: [new D.TextRun({ text: 'Sommaire', bold: true, size: 28, font: fonts[0] })] }));
+heads.forEach(s => children.push(new D.Paragraph({ indent: { left: s.type === 'h2' ? 440 : 0 }, spacing: { after: 60 }, children: [new D.TextRun({ text: (nums[s.id] ? nums[s.id] + ' ' : ''), color: accent, bold: s.type === 'h1', size: 20 }), new D.TextRun({ text: s.text || 'Sans titre', size: 20, color: s.type === 'h2' ? '5A5F68' : '2C3038' })] })));
+children.push(new D.Paragraph({ spacing: { after: 240 }, children: [] }));
+}
+let fig = 0;
+for (const s of r.sections) {
+if (s.type === 'h1') children.push(new D.Paragraph({ heading: D.HeadingLevel.HEADING_1, children: [new D.TextRun({ text: (nums[s.id] ? nums[s.id] + ' ' : '') + (s.text || '') })] }));
+else if (s.type === 'h2') children.push(new D.Paragraph({ heading: D.HeadingLevel.HEADING_2, children: [new D.TextRun({ text: (nums[s.id] ? nums[s.id] + ' ' : '') + (s.text || '') })] }));
+else if (s.type === 'p' && s.text.trim()) children.push(...textParas(s.text));
+else if (s.type === 'quote' && s.text.trim()) children.push(...textParas(s.text, { shading: { type: D.ShadingType.CLEAR, color: 'auto', fill: 'F3F5F9' }, border: { left: { style: D.BorderStyle.SINGLE, size: 24, color: accent, space: 10 } }, indent: { left: 240, right: 120 } }, { italics: true }));
+else if (s.type === 'img' && s.src) {
+try {
+const im = await loadImage(s.src);
+const maxW = 600 * ((s.width || 100) / 100);
+const w = Math.round(Math.min(maxW, im.naturalWidth)), h = Math.round(w * im.naturalHeight / im.naturalWidth);
+const type = s.src.startsWith('data:image/png') ? 'png' : s.src.startsWith('data:image/gif') ? 'gif' : 'jpg';
+children.push(new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { before: 200, after: 80 }, children: [new D.ImageRun({ type, data: dataURLtoBytes(s.src), transformation: { width: w, height: h } })] }));
+fig++;
+if (s.caption) children.push(new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { after: 240 }, children: [new D.TextRun({ text: `Figure ${fig} : ${s.caption}`, italics: true, size: 18, color: '7B7F88' })] }));
+} catch (e) { console.warn('Image ignorée', e); }
+}
+else if (s.type === 'pb') children.push(new D.Paragraph({ children: [new D.PageBreak()] }));
+}
+const footer = new D.Footer({ children: [new D.Paragraph({ alignment: D.AlignmentType.RIGHT, children: [new D.TextRun({ children: [D.PageNumber.CURRENT, ' / ', D.PageNumber.TOTAL_PAGES], size: 16, color: '9A9EA6' })] })] });
+const doc = new D.Document({
+creator: r.author || 'Rapport Pro', title, description: r.subject || '',
+styles: {
+default: {
+document: { run: { font: fonts[1], size: 22, color: '1F2329' }, paragraph: { spacing: { line: 300 } } },
+heading1: { run: { font: fonts[0], size: 32, bold: true, color: accent }, paragraph: { spacing: { before: 400, after: 160 } } },
+heading2: { run: { font: fonts[0], size: 26, bold: true, color: '23262D' }, paragraph: { spacing: { before: 260, after: 100 } } }
+}
+},
+numbering: { config: [{ reference: 'num', levels: [{ level: 0, format: D.LevelFormat.DECIMAL, text: '%1.', alignment: D.AlignmentType.START, style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] }] },
+sections: [{
+properties: { titlePage: !!r.cover, page: { margin: { top: 1134, bottom: 1134, left: 1191, right: 1191 } } },
+footers: { default: footer, first: new D.Footer({ children: [new D.Paragraph({ children: [] })] }) },
+children
+}]
+});
+try {
+const blob = await D.Packer.toBlob(doc);
+downloadBlob(blob, fileName('docx'));
+toast('Document Word téléchargé.', 'ok');
+} catch (e) { console.error(e); toast('Erreur pendant la création du fichier Word : ' + e.message, 'err'); }
+}
+function reportToMarkdown(r) {
+const nums = r.numbering ? headingNumbers(r) : {};
+const out = [`# ${r.title || 'Rapport'}`];
+if (r.subject) out.push(`${r.subject}`);
+const meta = [r.author, r.org, r.date && fmtDate(r.date)].filter(Boolean).join(' · ');
+if (meta) out.push(meta);
+let fig = 0;
+for (const s of r.sections) {
+if (s.type === 'h1') out.push(`## ${nums[s.id] ? nums[s.id] + ' ' : ''}${s.text}`);
+else if (s.type === 'h2') out.push(`### ${nums[s.id] ? nums[s.id] + ' ' : ''}${s.text}`);
+else if (s.type === 'p' && s.text.trim()) out.push(s.text.trim());
+else if (s.type === 'quote' && s.text.trim()) out.push(s.text.trim().split('
+').map(l => '> ' + l).join('
+'));
+else if (s.type === 'img' && s.src) { fig++; out.push(`[Figure ${fig}${s.caption ? ' : ' + s.caption : ''}]`); }
+else if (s.type === 'pb') out.push('---');
+}
+return out.join('
+') + '
+';
+}
+function exportMarkdown() { if (guardEmpty()) return; downloadBlob(new Blob([reportToMarkdown(app.report)], { type: 'text/markdown;charset=utf-8' }), fileName('md')); toast('Fichier Markdown téléchargé.', 'ok'); }
+function exportJSON(reports, name) {
+const data = { app: 'Rapport Pro', version: 3, exported: new Date().toISOString(), reports };
+downloadBlob(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }), name);
+toast(`Sauvegarde téléchargée (${reports.length} rapport${reports.length > 1 ? 's' : ''}).`, 'ok');
+}
+function markdownToReport(md, name) {
+const r = newReport(app.report);
+const lines = md.replace(/\r/g, '').split('
+');
+let buf = [], quote = [];
+const flush = () => { const t = buf.join('
+').trim(); if (t) r.sections.push(newSection('p', { text: t })); buf = []; };
+const flushQ = () => { const t = quote.join('
+').trim(); if (t) r.sections.push(newSection('quote', { text: t })); quote = []; };
+for (const line of lines) {
+let m;
+if ((m = line.match(/^#\s+(.+)/)) && !r.title) { flush(); flushQ(); r.title = m[1].trim(); continue; }
+if ((m = line.match(/^#{1,2}\s+(.+)/))) { flush(); flushQ(); r.sections.push(newSection('h1', { text: m[1].replace(/^\d+(.\d+).?\s+/, '').trim() })); continue; }
+if ((m = line.match(/^#{3,6}\s+(.+)/))) { flush(); flushQ(); r.sections.push(newSection('h2', { text: m[1].replace(/^\d+(.\d+).?\s+/, '').trim() })); continue; }
+if ((m = line.match(/^>\s?(.)/))) { flush(); quote.push(m[1]); continue; }
+if (/^(-{3,}|*{3,})\s$/.test(line)) { flush(); flushQ(); r.sections.push(newSection('pb')); continue; }
+flushQ();
+if (!line.trim()) { flush(); continue; }
+buf.push(line);
+}
+flush(); flushQ();
+if (!r.title) r.title = name.replace(/.[^.]+$/, '');
+return r;
+}
+async function importFile(file) {
+try {
+const text = await file.text();
+let reports = [];
+if (/.json$/i.test(file.name) || /^\s[[{]/.test(text)) {
+const data = JSON.parse(text);
+const arr = Array.isArray(data) ? data : Array.isArray(data.reports) ? data.reports : [data];
+reports = arr.map(normalizeReport);
+} else reports = [markdownToReport(text, file.name)];
+reports = reports.filter(r => !isEmptyReport(r));
+if (!reports.length) { toast('Aucun rapport trouvé dans ce fichier.', 'warn'); return; }
+for (const r of reports) {
+if (app.history.some(h => h.id === r.id)) r.id = uid();
+r.updated = Date.now();
+app.history.unshift(r);
+}
+if (!store.set(K.hist, app.history)) toast('Stockage plein : import partiel.', 'err');
+updateMeter();
+if (reports.length === 1) { openReport(reports[0].id); toast('Rapport importé.', 'ok'); }
+else { renderHistory(); toast(`${reports.length} rapports importés.`, 'ok'); }
+} catch (e) { toast('Fichier illisible : ' + e.message, 'err'); }
+}
+/* =========================================================================
+HISTORIQUE
+========================================================================= /
+function renderHistory() {
+const q = normTxt($('#h-search').value);
+const grid = $('#hist-grid');
+const list = [...app.history].sort((a, b) => (b.updated || 0) - (a.updated || 0))
+.filter(h => !q || normTxt(h.title + ' ' + h.subject + ' ' + h.org).includes(q));
+if (!app.history.length) { grid.innerHTML = `<div class="hist-empty">${icon('history')}<p><b>Aucun rapport enregistré.</b><br>Vos rapports s'enregistrent automatiquement pendant que vous écrivez.</p></div>`; return; }
+if (!list.length) { grid.innerHTML = `<div class="hist-empty">Aucun résultat pour cette recherche.</div>`; return; }
+grid.innerHTML = list.map(h => {
+const open = h.id === app.report.id;
+return `<article class="hcard" data-id="${h.id}">
+<div class="hcard-top" style="background:${accentOf(h)}"><b>${esc(h.title || 'Sans titre')}</b></div>
+<div class="hcard-b"><p>${esc(h.subject || h.org || '—')}</p>
+<div class="hcard-meta"><span>${h.sections.length} bloc${h.sections.length > 1 ? 's' : ''}</span><span>${reportWords(h).toLocaleString('fr-FR')} mots</span><span>${esc(fmtRel(h.updated))}</span></div></div>
+<div class="hcard-f">${open ? '<span class="open-tag">Ouvert</span>' : '<span class="sp"></span>'}
+<button class="ib" data-h="dup" title="Dupliquer">${icon('copy')}</button>
+<button class="ib" data-h="json" title="Exporter (.json)">${icon('download')}</button>
+<button class="ib del" data-h="del" title="Supprimer">${icon('trash')}</button></div>
+</article>`;
+}).join('');
+}
+function openReport(id) {
+persist();
+const found = app.history.find(x => x.id === id);
+if (!found) return;
+app.report = normalizeReport(clone(found));
+app.focusId = null;
+store.set(K.last, id);
+renderEditor();
+navigate('editor');
+}
+function newDoc() {
+if (app.ai.busy) { toast('Attendez la fin de la génération IA ou arrêtez-la.', 'warn'); return; }
+persist();
+app.report = newReport(app.report);
+app.focusId = null;
+renderEditor();
+navigate('editor');
+if (window.innerWidth <= 860) setTab('edit');
+setTimeout(() => $('#m-title').focus(), 50);
+}
+function bindHistory() {
+$('#h-search').addEventListener('input', renderHistory);
+$('#h-new').onclick = newDoc;
+$('#h-import').onclick = () => $('#file-import').click();
+$('#h-backup').onclick = () => { persist(); if (!app.history.length) return toast('Aucun rapport à sauvegarder.', 'warn'); exportJSON(app.history, `rapports_sauvegarde_${todayISO()}.json`); };
+$('#file-import').addEventListener('change', e => { const f = e.target.files[0]; if (f) importFile(f); e.target.value = ''; });
+$('#hist-grid').addEventListener('click', e => {
+const card = e.target.closest('.hcard'); if (!card) return;
+const id = card.dataset.id, act = e.target.closest('[data-h]')?.dataset.h;
+const h = app.history.find(x => x.id === id); if (!h) return;
+if (!act) return openReport(id);
+e.stopPropagation();
+if (act === 'dup') {
+const c = normalizeReport(clone(h)); c.id = uid(); c.title = (h.title || 'Sans titre') + ' (copie)'; c.updated = Date.now();
+app.history.unshift(c); store.set(K.hist, app.history); renderHistory(); toast('Rapport dupliqué.', 'ok');
+} else if (act === 'json') exportJSON([h], slug(h.title) + '.json');
+else if (act === 'del') {
+if (!confirm(`Supprimer définitivement « ${h.title || 'Sans titre'} » ?`)) return;
+app.history = app.history.filter(x => x.id !== id);
+store.set(K.hist, app.history); updateMeter();
+if (app.report.id === id) { app.report = newReport(app.report); renderEditor(); }
+renderHistory(); toast('Rapport supprimé.', 'info');
+}
+});
+}
+/* =========================================================================
+IA — moteurs
+========================================================================= /
+const WEBLLM_URL = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.86/+esm';
+const WL_MODELS = [
+{ id: 'Qwen2.5-1.5B-Instruct', n: 'Qwen 2.5 · 1,5 Md — équilibré (recommandé)', mem: '1,6 Go' },
+{ id: 'Qwen2.5-3B-Instruct', n: 'Qwen 2.5 · 3 Md — meilleure qualité', mem: '2,5 Go' },
+{ id: 'Llama-3.2-3B-Instruct', n: 'Llama 3.2 · 3 Md — alternative', mem: '2,3 Go' },
+{ id: 'Qwen2.5-0.5B-Instruct', n: 'Qwen 2.5 · 0,5 Md — très léger', mem: '1 Go' }
+];
+const gpu = { checked: false, ok: false, f16: false, reason: '' };
+async function checkGPU() {
+if (gpu.checked) return gpu;
+gpu.checked = true;
+try {
+if (!('gpu' in navigator)) { gpu.reason = "WebGPU n'est pas disponible dans ce navigateur (utilisez Chrome ou Edge récent)."; return gpu; }
+const ad = await navigator.gpu.requestAdapter();
+if (!ad) { gpu.reason = 'Aucune carte graphique compatible WebGPU détectée.'; return gpu; }
+gpu.ok = true; gpu.f16 = ad.features.has('shader-f16');
+} catch (e) { gpu.reason = 'WebGPU indisponible : ' + e.message; }
+return gpu;
+}
+const wl = { mod: null, engine: null, modelId: null, loading: null };
+function wlFullId(key) { return key + (gpu.f16 ? '-q4f16_1-MLC' : '-q4f32_1-MLC'); }
+function friendlyWLError(e) {
+const m = String(e && (e.message || e));
+if (/fetch|network|NetworkError|Failed to load/i.test(m)) return 'Téléchargement impossible : vérifiez la connexion internet (nécessaire au premier chargement).';
+if (/memory|OOM|Device was lost|allocate|out of/i.test(m)) return 'Mémoire graphique insuffisante : choisissez un modèle plus léger.';
+if (/cache|SecurityError|storage|quota/i.test(m)) return "Le navigateur refuse le cache du modèle. Ouvrez la page via un petit serveur local (python -m http.server) ou libérez de l'espace disque.";
+return m;
+}
+async function ensureWebLLM(onProgress) {
+await checkGPU();
+if (!gpu.ok) throw new Error(gpu.reason);
+const fullId = wlFullId(S.wlModel);
+if (wl.engine && wl.modelId === fullId) return wl.engine;
+if (wl.loading) return wl.loading;
+wl.loading = (async () => {
+const cb = rep => { setWLProgress(rep.progress, rep.text); onProgress && onProgress(rep); };
+setWLProgress(0, 'Chargement de la bibliothèque WebLLM…');
+if (!wl.mod) {
+try { wl.mod = await import(WEBLLM_URL); }
+catch (e) { throw new Error('Impossible de charger WebLLM (connexion internet requise la première fois).'); }
+}
+const m = wl.mod;
+if (wl.engine) {
+wl.engine.setInitProgressCallback?.(cb);
+await wl.engine.reload(fullId);
+} else {
+const create = backend => m.CreateMLCEngine(fullId, { appConfig: { ...m.prebuiltAppConfig, cacheBackend: backend }, initProgressCallback: cb });
+try { wl.engine = await create('cache'); }
+catch (e) {
+if (/cache|SecurityError|storage|caches/i.test(String(e && e.message))) wl.engine = await create('indexeddb');
+else throw e;
+}
+}
+wl.modelId = fullId;
+setWLProgress(1, 'Modèle prêt : ' + (WL_MODELS.find(x => x.id === S.wlModel)?.n || S.wlModel).split(' — ')[0]);
+renderEngineStatus();
+return wl.engine;
+})();
+try { return await wl.loading; }
+catch (e) { const msg = friendlyWLError(e); setWLProgress(null, msg, true); throw new Error(msg); }
+finally { wl.loading = null; }
+}
+function setWLProgress(p, text, err) {
+const prog = $('#wl-prog'), bar = $('#wl-bar'), st = $('#wl-status');
+if (p == null) prog.hidden = true; else { prog.hidden = p >= 1; bar.style.width = Math.round(p * 100) + '%'; }
+st.className = 'status-line' + (err ? ' err' : p >= 1 ? ' ok' : '');
+st.textContent = text || '';
+}
+function currentEngine() {
+if (S.engine === 'webllm' || S.engine === 'server' || S.engine === 'builtin') return S.engine;
+return gpu.ok ? 'webllm' : 'builtin';
+}
+function engineLabel(e = currentEngine()) { return { webllm: 'IA dans le navigateur', server: 'Serveur local', builtin: 'Trame hors ligne' }[e]; }
+function renderEngineStatus() {
+const e = currentEngine(), dot = $('#eng-dot'), lb = $('#eng-label');
+if (e === 'webllm') { dot.className = 'dot ' + (wl.engine ? 'ok' : gpu.ok ? 'warn' : 'off'); lb.textContent = wl.engine ? 'IA navigateur : prête' : 'IA navigateur : à charger'; }
+else if (e === 'server') { dot.className = 'dot ' + (srvOK ? 'ok' : 'warn'); lb.textContent = 'IA : serveur local' + (S.serverModel ? ' · ' + S.serverModel : ''); }
+else { dot.className = 'dot off'; lb.textContent = 'IA : trame hors ligne'; }
+const hint = $('#ai-go-hint');
+if (hint) hint.textContent = e === 'webllm' ? (wl.engine ? 'Le modèle est chargé : la génération démarre tout de suite.' : 'Le modèle sera téléchargé au premier lancement (une seule fois).') : e === 'server' ? 'Le texte sera généré par votre serveur local.' : 'Génération instantanée d'une trame rédigée à compléter.';
+}
+let srvOK = false;
+function serverBase() { return (S.serverUrl || '').trim().replace(//+$/, '').replace(//chat/completions$/, ''); }
+function serverHeaders() { const h = { 'Content-Type': 'application/json' }; if (S.serverKey) h.Authorization = 'Bearer ' + S.serverKey; return h; }
+function serverNetErr(base) { return `Impossible de joindre ${base}. Vérifiez que le serveur est lancé. Pour Ollama, définissez OLLAMA_ORIGINS=* puis redémarrez-le.`; }
+async function testServer() {
+const st = $('#sv-status'), base = serverBase();
+st.className = 'status-line'; st.innerHTML = icon('loader', 'spin sm') + ' Connexion…';
+try {
+const res = await fetch(base + '/models', { headers: serverHeaders() });
+if (!res.ok) throw new Error('Réponse ' + res.status + ' du serveur');
+const j = await res.json();
+const ids = (j.data || j.models || []).map(m => m.id || m.name).filter(Boolean);
+$('#sv-models').innerHTML = ids.map(i => `<option value="${esc(i)}">`).join('');
+if (!S.serverModel && ids.length) { S.serverModel = ids[0]; $('#sv-model').value = ids[0]; saveSettings(); }
+srvOK = true;
+st.className = 'status-line ok';
+st.textContent = ids.length ? `Connecté · ${ids.length} modèle${ids.length > 1 ? 's' : ''} disponible${ids.length > 1 ? 's' : ''}` : 'Connecté, mais aucun modèle installé.';
+} catch (e) {
+srvOK = false; st.className = 'status-line err';
+st.textContent = e instanceof TypeError ? serverNetErr(base) : e.message;
+}
+renderEngineStatus();
+}
+async function streamServer(messages, { onToken, maxTokens, temperature }) {
+const base = serverBase();
+if (!S.serverModel) throw new Error('Indiquez le nom du modèle du serveur local (bouton « Tester la connexion »).');
+let res;
+try {
+res = await fetch(base + '/chat/completions', { method: 'POST', headers: serverHeaders(), signal: app.ai.abort?.signal, body: JSON.stringify({ model: S.serverModel, messages, stream: true, temperature, max_tokens: maxTokens }) });
+} catch (e) { if (e.name === 'AbortError') throw e; throw new Error(serverNetErr(base)); }
+if (!res.ok) {
+let msg = 'Erreur ' + res.status;
+try { const j = await res.json(); msg = (j.error && (j.error.message || j.error)) || msg; } catch (e) { }
+throw new Error('Le serveur a répondu : ' + msg);
+}
+srvOK = true;
+const ctype = res.headers.get('content-type') || '';
+if (ctype.includes('application/json')) { // serveur sans streaming
+const j = await res.json(); const t = j.choices?.[0]?.message?.content || ''; onToken && onToken(t, t); return t;
+}
+const reader = res.body.getReader(), dec = new TextDecoder();
+let buf = '', full = '';
+while (true) {
+const { done, value } = await reader.read();
+if (done) break;
+buf += dec.decode(value, { stream: true });
+let i;
+while ((i = buf.indexOf('
+')) >= 0) {
+const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+if (!line.startsWith('data:')) continue;
+const data = line.slice(5).trim();
+if (data === '[DONE]') return full;
+try {
+const j = JSON.parse(data);
+const d = j.choices?.[0]?.delta?.content ?? j.choices?.[0]?.text ?? '';
+if (d) { full += d; onToken && onToken(d, full); }
+} catch (e) { }
+}
+}
+return full;
+}
+async function llm(messages, { onToken, maxTokens = 700, temperature } = {}) {
+const t = temperature ?? S.temperature;
+const eng = currentEngine();
+if (eng === 'server') return streamServer(messages, { onToken, maxTokens, temperature: t });
+if (eng === 'webllm') {
+const e = await ensureWebLLM();
+const stream = await e.chat.completions.create({ messages, stream: true, temperature: t, max_tokens: maxTokens, frequency_penalty: 0.2 });
+let full = '';
+for await (const ch of stream) {
+if (app.ai.stopped) { try { e.interruptGenerate(); } catch (x) { } break; }
+const d = ch.choices?.[0]?.delta?.content || '';
+if (d) { full += d; onToken && onToken(d, full); }
+}
+return full;
+}
+throw new Error('builtin');
+}
+/* --- Nettoyage du texte produit par les modèles --- /
+function stripThink(t) { return String(t || '').replace(/<think>[\s\S]?(</think>|$)/g, ''); }
+function cleanLLM(text, heading) {
+let t = stripThink(text).replace(/\r/g, '').replace(/```[a-z]*
+?|```/g, '');
+let lines = t.split('
+').map(l => l.replace(/\s+$/, ''));
+lines = lines.filter(l => !/^\s#{1,6}\s/.test(l));
+// Titre répété en première ligne ?
+while (lines.length && !lines[0].trim()) lines.shift();
+if (lines.length) {
+const first = normTxt(lines[0].replace(/**/g, ''));
+const h = normTxt(heading || '');
+if (/^**[^]+**:?$/.test(lines[0].trim()) || (h && first && (first === h || (first.length < h.length + 12 && first.includes(h))))) lines.shift();
+}
+if (lines.length && /^(voici|bien s[uû]r|certainement|d'accord)\b/i.test(lines[0].trim())) lines.shift();
+t = lines.join('
+')
+.replace(/^\s*\s+/gm, '- ')
+.replace(/^\s•\s/gm, '- ')
+.replace(/
+{3,}/g, '
+')
+.trim();
+return t;
+}
+function cleanTitleLine(s) { return String(s || '').replace(/[_#`"«»]/g, '').replace(/^\s(titre|title)\s:\s/i, '').replace(/\s+/g, ' ').trim().replace(/[.:]$/, ''); }
+/* =========================================================================
+IA — trame hors ligne (aucun modèle requis)
+========================================================================= /
+const TPL = {
+intro: ["Ce rapport porte sur {S}. Il a pour objectif de présenter le contexte du sujet, la démarche suivie et les principaux enseignements qui en ressortent, afin d'en donner une vision claire et structurée.", "Le choix de ce sujet s'explique par son intérêt concret : il soulève des questions à la fois pratiques et techniques. [à compléter : cadre dans lequel ce rapport est rédigé, motivations]", "Après une présentation du contexte, ce document détaille les étapes du travail, les résultats obtenus, puis les perspectives envisagées."],
+contexte: ["{S} s'inscrit dans un contexte qu'il est utile de rappeler pour bien en comprendre les enjeux. [à compléter : cadre général, situation de départ, acteurs concernés]", "Plusieurs éléments expliquent l'importance de ce sujet aujourd'hui : l'évolution des besoins, les contraintes existantes et les attentes des personnes concernées. Ils constituent le point de départ de la réflexion menée dans ce rapport.", "Il convient aussi de préciser le périmètre retenu : ce rapport se concentre sur les aspects essentiels du sujet, sans prétendre à l'exhaustivité."],
+entreprise: ["[à compléter : nom de l'entreprise], où s'est déroulé ce stage, est spécialisée dans [domaine d'activité]. Elle compte [effectif] salariés et travaille principalement pour [clients / secteur].", "Le stage s'est déroulé au sein du service [nom du service], dont le rôle est de [missions du service]. Cette organisation m'a permis de travailler au contact de l'équipe et de comprendre le fonctionnement quotidien de la structure.", "La place de l'entreprise sur son marché, ses principaux concurrents et ses projets en cours permettent de situer le travail réalisé dans un cadre plus large. [à compléter]"],
+missions: ["Dans le cadre de ce stage, plusieurs missions m'ont été confiées. La mission principale consistait à [à compléter], avec pour objectif de [résultat attendu].", "En parallèle, j'ai participé à des tâches complémentaires : [à compléter : tâches secondaires]. Ces missions ont été menées en lien avec mon tuteur, avec des points d'avancement réguliers.", "Les attentes étaient définies dès le départ, ce qui a facilité l'organisation du travail et le suivi de l'avancement."],
+realisation: ["La réalisation s'est déroulée en plusieurs étapes. La première a consisté à analyser le besoin et à rassembler les informations nécessaires, avant de passer à la mise en œuvre proprement dite.", "Concrètement, le travail a porté sur [à compléter : étapes, outils, méthodes utilisés]. Chaque étape a été vérifiée afin de s'assurer que le résultat correspondait aux attentes.", "Les choix effectués tout au long de cette phase ont été guidés par trois critères : la fiabilité, la simplicité de mise en œuvre et le respect des délais."],
+difficultes: ["Ce travail n'a pas été exempt de difficultés. La principale a été [à compléter : difficulté rencontrée], qui a ralenti l'avancement pendant un temps.", "Pour y remédier, plusieurs solutions ont été étudiées. La solution retenue a consisté à [à compléter], ce qui a permis de reprendre le travail dans de bonnes conditions.", "Ces difficultés ont finalement été formatrices : elles ont obligé à prendre du recul, à demander de l'aide au bon moment et à mieux organiser les étapes suivantes."],
+competences: ["Cette expérience m'a permis de développer des compétences techniques, notamment [à compléter : outils, méthodes, logiciels].", "Sur le plan humain, j'ai appris à travailler en équipe, à rendre compte clairement de l'avancement de mon travail et à gérer mon temps face à plusieurs priorités.", "Ces acquis seront directement utiles pour la suite de mon parcours, en particulier pour [à compléter : projet professionnel, poursuite d'études]."],
+conclusion: ["En conclusion, ce travail sur {S} a permis d'atteindre l'essentiel des objectifs fixés. Il a également mis en évidence les points qui méritent d'être approfondis.", "Au-delà des résultats, cette démarche a été l'occasion d'acquérir une méthode de travail rigoureuse, réutilisable dans d'autres contextes.", "Plusieurs pistes restent ouvertes pour prolonger ce travail : [à compléter : améliorations possibles, suites envisagées]."],
+objectifs: ["L'objectif principal est de [à compléter], en lien direct avec {S}.", "Pour y parvenir, des objectifs intermédiaires ont été définis : comprendre le besoin, concevoir une solution adaptée, la mettre en œuvre puis vérifier son bon fonctionnement.", "Des critères de réussite ont été fixés dès le départ afin de pouvoir évaluer objectivement le résultat final. [à compléter : critères mesurables]"],
+cahier: ["Le cahier des charges précise les exigences à respecter : [à compléter : contraintes fonctionnelles, techniques, budget, délais].", "Les contraintes principales concernent [à compléter]. Elles ont orienté les choix effectués lors de la conception.", "Le tableau des exigences peut être résumé ainsi :
+Exigence 1 : [à compléter]
+Exigence 2 : [à compléter]
+Exigence 3 : [à compléter]"],
+methode: ["La démarche adoptée repose sur une approche progressive : étude du principe, choix d'une méthode, puis vérification par l'expérience.", "Le principe utilisé est le suivant : [à compléter : principe théorique, schéma, formule]. Il permet de répondre au besoin de façon simple et vérifiable.", "Le matériel et les outils employés sont : [à compléter : matériel, logiciels, instruments de mesure]."],
+methodo: ["L'étude repose sur une méthodologie en plusieurs étapes : collecte d'informations, analyse, puis synthèse.", "Les sources utilisées sont : [à compléter : documents, entretiens, données, observations].", "Cette approche permet de croiser plusieurs points de vue et de limiter les biais d'interprétation."],
+miseoeuvre: ["La mise en œuvre a commencé par la préparation du matériel et la vérification des conditions de travail. [à compléter : montage, configuration, programme]", "Chaque étape a été validée avant de passer à la suivante, ce qui a permis d'identifier rapidement l'origine des éventuels problèmes.", "Les réglages réalisés et les paramètres retenus sont résumés ci-dessous :
+Paramètre 1 : [valeur]
+Paramètre 2 : [valeur]
+Paramètre 3 : [valeur]"],
+resultats: ["Les résultats obtenus sont présentés dans cette partie. [à compléter : mesures, tableaux, courbes, captures]", "Dans l'ensemble, ils sont cohérents avec ce qui était attendu. Les écarts observés restent limités et s'expliquent principalement par [à compléter].", "Les principaux résultats peuvent être résumés ainsi :
+[résultat 1]
+[résultat 2]
+[résultat 3]"],
+analyse: ["L'analyse permet de tirer plusieurs enseignements. Tout d'abord, [à compléter : constat principal].", "Il est utile de comparer ces éléments aux valeurs théoriques ou aux objectifs de départ. Cette comparaison montre que [à compléter].", "Certaines limites doivent toutefois être soulignées : précision des données, conditions de test ou temps disponible. Elles invitent à interpréter ces résultats avec prudence."],
+perspectives: ["Plusieurs améliorations peuvent être envisagées pour aller plus loin : [à compléter].", "À plus long terme, ce travail pourrait être étendu à d'autres usages ou faire l'objet d'une étude plus approfondie.", "Ces perspectives montrent que le travail réalisé constitue une base solide sur laquelle il sera possible de s'appuyer."],
+organisation: ["Le projet a été organisé en plusieurs phases : analyse, conception, réalisation, tests et bilan. Un planning prévisionnel a été établi dès le début. [à compléter : durée de chaque phase]", "La répartition des tâches s'est faite selon les compétences de chacun : [à compléter : rôles]. Des réunions régulières ont permis de suivre l'avancement et d'ajuster le planning.", "Les outils de suivi utilisés (planning, tableau de tâches, partage de documents) ont facilité la coordination."],
+besoin: ["Le projet répond à un besoin identifié : [à compléter : problème à résoudre, utilisateurs concernés].", "Les solutions existantes ne répondaient pas entièrement à ce besoin, ce qui justifie la démarche engagée autour de {S}.", "Ce besoin a été formalisé avec les personnes concernées afin de s'assurer que le projet réponde à leurs attentes réelles."],
+bilan: ["Le bilan du projet est globalement positif : les objectifs principaux ont été atteints [à compléter : préciser lesquels].", "Certains points restent perfectibles, notamment [à compléter]. Ils constituent des axes d'amélioration pour une prochaine version.", "Ce projet a aussi été une expérience enrichissante sur le plan de l'organisation et du travail collectif."],
+etat: ["L'état des lieux permet de dresser un portrait de la situation actuelle. [à compléter : chiffres clés, situation observée]", "Les points forts identifiés sont [à compléter], tandis que les principaux points faibles concernent [à compléter].", "Ce diagnostic sert de base aux analyses et aux recommandations présentées dans la suite du rapport."],
+recommandations: ["Au regard de l'analyse, plusieurs recommandations peuvent être formulées :
+[recommandation 1]
+[recommandation 2]
+[recommandation 3]", "Ces recommandations sont classées par ordre de priorité, en tenant compte de leur impact attendu et de leur facilité de mise en œuvre.", "Leur mise en place nécessitera [à compléter : moyens, délais, responsables], ainsi qu'un suivi régulier pour en mesurer les effets."],
+objet: ["Cette réunion avait pour objet {S}. [à compléter : date, lieu, durée]", "Elle visait à faire le point sur l'avancement et à prendre les décisions nécessaires pour la suite."],
+participants: ["- [Nom], [fonction]
+[Nom], [fonction]
+[Nom], [fonction]
+Excusés : [à compléter]"],
+points: ["Les points suivants ont été abordés :
+[Point 1]
+[Point 2]
+[Point 3]", "Pour chaque point, les échanges ont permis de [à compléter : résumé des discussions]."],
+decisions: ["Les décisions suivantes ont été prises :
+[décision 1]
+[décision 2]", "Ces décisions s'appliquent à compter du [date]."],
+actions: ["- [Action] — responsable : [nom] — échéance : [date]
+[Action] — responsable : [nom] — échéance : [date]
+[Action] — responsable : [nom] — échéance : [date]"],
+prochaine: ["La prochaine réunion est prévue le [date] à [heure], à [lieu]. Ordre du jour provisoire : [à compléter]."],
+enjeux: ["Ce sujet présente plusieurs enjeux importants : économiques, techniques et humains. [à compléter]", "Bien identifier ces enjeux permet de mesurer l'intérêt du sujet et de hiérarchiser les priorités.", "Ils doivent aussi être mis en regard des risques et des contraintes, afin de proposer une vision équilibrée."],
+developpement: ["Le cœur du sujet peut être abordé sous plusieurs angles. Le premier concerne [à compléter].", "Un second aspect, tout aussi important, porte sur [à compléter]. Il complète le précédent et apporte un éclairage différent.", "La mise en relation de ces différents aspects permet de mieux comprendre la complexité de {S}."],
+indicateurs: ["Les indicateurs clés retenus sont les suivants :
+[Indicateur 1] : [valeur à compléter]
+[Indicateur 2] : [valeur à compléter]
+[Indicateur 3] : [valeur à compléter]", "Ces chiffres doivent être vérifiés et mis à jour avant toute diffusion du rapport."]
+};
+const DOC_TYPES = {
+stage: { label: 'rapport de stage', sub: 'Rapport de stage', plan: [['Introduction', 'intro'], ["Présentation de l'entreprise", 'entreprise'], ['Missions confiées', 'missions'], ['Travail réalisé', 'realisation'], ['Difficultés rencontrées et solutions', 'difficultes'], ['Compétences acquises', 'competences'], ['Conclusion', 'conclusion']] },
+technique: { label: 'rapport technique / compte rendu de TP', sub: 'Rapport technique', plan: [['Introduction', 'intro'], ['Objectifs', 'objectifs'], ['Cahier des charges et contraintes', 'cahier'], ['Principe et méthode', 'methode'], ['Mise en œuvre', 'miseoeuvre'], ['Résultats', 'resultats'], ['Analyse et discussion', 'analyse'], ['Conclusion et perspectives', 'conclusion']] },
+projet: { label: 'rapport de projet', sub: 'Rapport de projet', plan: [['Introduction', 'intro'], ['Contexte et besoin', 'besoin'], ['Objectifs', 'objectifs'], ['Organisation du projet', 'organisation'], ['Réalisation', 'realisation'], ['Résultats', 'resultats'], ['Bilan et perspectives', 'bilan']] },
+analyse: { label: 'étude / analyse', sub: 'Étude et analyse', plan: [['Introduction', 'intro'], ['Contexte', 'contexte'], ['Méthodologie', 'methodo'], ['État des lieux', 'etat'], ['Analyse', 'analyse'], ['Recommandations', 'recommandations'], ['Conclusion', 'conclusion']] },
+reunion: { label: 'compte rendu de réunion', sub: 'Compte rendu de réunion', plan: [['Objet de la réunion', 'objet'], ['Participants', 'participants'], ['Points abordés', 'points'], ['Décisions prises', 'decisions'], ['Actions à mener', 'actions'], ['Prochaine réunion', 'prochaine']] },
+general: { label: 'rapport', sub: 'Rapport', plan: [['Introduction', 'intro'], ['Contexte', 'contexte'], ['Enjeux', 'enjeux'], ['Développement', 'developpement'], ['Perspectives', 'perspectives'], ['Conclusion', 'conclusion']] }
+};
+const TONES = { formel: 'formel et professionnel', neutre: 'neutre, clair et direct', pedagogique: 'pédagogique, avec des explications simples', technique: 'technique et précis' };
+function detectType(text) {
+const t = normTxt(text);
+if (/\bstage|stagiaire|alternance|apprentissage\b/.test(t)) return 'stage';
+if (/reunion|compte rendu|\bcr\b|seance|comite/.test(t)) return 'reunion';
+if (/\btp\b|travaux pratiques|mesure|montage|capteur|carte|circuit|electron|microcontrol|arduino|raspberry|stm32|filtre|signal|moteur|technique|protocole|experience|banc/.test(t)) return 'technique';
+if (/projet|conception|developpement d|application|prototype|realisation/.test(t)) return 'projet';
+if (/analyse|etude|marche|strategie|diagnostic|audit|benchmark|veille|enquete/.test(t)) return 'analyse';
+return 'general';
+}
+function capFirst(s) { s = String(s || '').trim(); return s ? s[0].toUpperCase() + s.slice(1) : s; }
+function pickPlan(type, parts) {
+let plan = DOC_TYPES[type].plan.slice();
+if (parts && parts < plan.length && parts >= 2) {
+const first = plan[0], last = plan[plan.length - 1], mid = plan.slice(1, -1);
+const keep = parts - 2;
+const step = mid.length / Math.max(1, keep);
+const chosen = [];
+for (let i = 0; i < keep; i++) chosen.push(mid[Math.floor(i * step)]);
+plan = [first, ...chosen, last];
+}
+return plan;
+}
+function paraCount(len) { return len === 'court' ? 1 : len === 'long' ? 3 : 2; }
+function fillTpl(key, topic, n) {
+const arr = TPL[key] || TPL.developpement;
+const S = `« ${topic} »`;
+return arr.slice(0, Math.min(n, arr.length)).map(p => p.replace(/{S}/g, S)).join('
+');
+}
+function keyForHeading(h) {
+const t = normTxt(h);
+const map = [[/intro/, 'intro'], [/conclu/, 'conclusion'], [/entreprise|societe|structure d accueil/, 'entreprise'], [/mission/, 'missions'], [/difficult|probleme|obstacle/, 'difficultes'], [/competence|acquis|apport/, 'competences'], [/objectif/, 'objectifs'], [/cahier|contrainte|exigence|specification/, 'cahier'], [/methodo/, 'methodo'], [/principe|methode|theor/, 'methode'], [/mise en oeuvre|montage|implementation/, 'miseoeuvre'], [/resultat|mesure/, 'resultats'], [/analyse|discussion|interpretation/, 'analyse'], [/perspective|amelioration|suite/, 'perspectives'], [/organisation|planning|gestion/, 'organisation'], [/besoin/, 'besoin'], [/bilan/, 'bilan'], [/etat des lieux|diagnostic|situation/, 'etat'], [/recommand|preconisation|proposition/, 'recommandations'], [/contexte|presentation/, 'contexte'], [/enjeu/, 'enjeux'], [/realisation|travail realise|developpement/, 'realisation'], [/indicateur|chiffre|kpi/, 'indicateurs'], [/participant/, 'participants'], [/decision/, 'decisions'], [/action/, 'actions']];
+for (const [re, k] of map) if (re.test(t)) return k;
+return 'developpement';
+}
+function builtinGenerate({ topic, type, length, parts, instr }) {
+const n = paraCount(length);
+const plan = pickPlan(type, parts);
+if (/chiffre|donnee|kpi|indicateur|statisti/.test(normTxt(instr)) && !plan.some(p => p[1] === 'indicateurs')) plan.splice(Math.max(1, plan.length - 1), 0, ['Indicateurs clés', 'indicateurs']);
+return {
+title: capFirst(topic),
+subtitle: DOC_TYPES[type].sub,
+sections: plan.map(([h, k]) => ({ heading: h, text: fillTpl(k, topic, n) }))
+};
+}
+/* =========================================================================
+IA — génération d'un rapport complet
+========================================================================= /
+function startJob(label) {
+app.ai.busy = true; app.ai.stopped = false; app.ai.abort = new AbortController();
+$('#ai-chip').hidden = false; setJob(label);
+$('#ai-go').disabled = true;
+}
+function setJob(label) { $('#ai-chip-text').textContent = label; }
+function endJob() {
+app.ai.busy = false; app.ai.abort = null;
+const sid = app.streamingId; app.streamingId = null;
+$('#ai-chip').hidden = true; $('#ai-go').disabled = false;
+if (sid) { const card = $(`.sec[data-id="${sid}"]`); if (card) { card.classList.remove('streaming'); card.querySelector('textarea')?.removeAttribute('readonly'); } }
+renderPreview();
+}
+function stopJob() {
+if (!app.ai.busy) return;
+app.ai.stopped = true;
+try { app.ai.abort?.abort(); } catch (e) { }
+try { wl.engine?.interruptGenerate(); } catch (e) { }
+}
+function liveReset(steps) {
+$('#ai-live').hidden = false;
+$('#ai-steps').innerHTML = steps.map((s, i) => `<li data-s="${i}"><span class="st"></span>${esc(s)}</li>`).join('');
+$('#ai-stream').textContent = '';
+}
+function liveStep(i, state) { const li = $(`#ai-steps li[data-s="${i}"]`); if (li) li.className = state; }
+function liveAdd(label) { const ol = $('#ai-steps'); const i = ol.children.length; ol.insertAdjacentHTML('beforeend', `<li data-s="${i}"><span class="st"></span>${esc(label)}</li>`); return i; }
+function liveText(t) { const b = $('#ai-stream'); b.textContent = t; b.scrollTop = b.scrollHeight; }
+function setSectionText(id, text) {
+const s = findSec(id); if (!s) return false;
+s.text = text;
+const ta = $(`.sec[data-id="${id}"] [data-f="text"]`);
+if (ta && document.activeElement !== ta) { ta.value = text; if (ta.tagName === 'TEXTAREA') autosize(ta); }
+schedulePreview();
+return true;
+}
+function readAIForm() {
+return {
+topic: $('#ai-topic').value.trim(),
+type: $('#ai-type').value,
+tone: $('#ai-tone').value,
+length: app.ui.aiLength,
+parts: $('#ai-parts').value === 'auto' ? 0 : +$('#ai-parts').value,
+instr: $('#ai-instr').value.trim(),
+target: app.ui.aiTarget
+};
+}
+const SYS = "Tu es un rédacteur professionnel francophone. Tu écris des rapports clairs, bien structurés, en français correct et naturel. Tu n'inventes jamais de chiffres, de noms ou de résultats précis : quand une information manque, tu écris [à compléter]. Tu réponds uniquement avec le texte demandé, sans commentaire.";
+function parsePlan(text) {
+const t = stripThink(text);
+let title = '', subtitle = '';
+const parts = [];
+for (const raw of t.split('
+')) {
+const line = raw.trim(); let m;
+if (!line) continue;
+if ((m = line.match(/^*\ssous[- ]titre\s*\s:\s(.+)$/i))) { subtitle = cleanTitleLine(m[1]); continue; }
+if ((m = line.match(/^*\stitre\s*\s:\s(.+)$/i))) { title = cleanTitleLine(m[1]); continue; }
+if ((m = line.match(/^(?:**)?(?:partie\s+)?(\d{1,2})\s[.)-:]\s(.+)$/i))) {
+const h = cleanTitleLine(m[2]).replace(/\s[-–:]\s.$/, '').trim();
+if (h && h.length < 110) parts.push(h);
+}
+}
+return { title, subtitle, parts: [...new Set(parts)] };
+}
+async function generateReport() {
+if (app.ai.busy) return;
+const f = readAIForm();
+if (!f.topic) { toast('Indiquez le sujet du rapport.', 'warn'); $('#ai-topic').focus(); return; }
+const engine = currentEngine();
+const type = f.type === 'auto' ? detectType(f.topic + ' ' + f.instr) : f.type;
+const dt = DOC_TYPES[type];
+let r = app.report;
+const isNew = f.target === 'new' || isEmptyReport(r);
+if (isNew) { persist(); r = newReport(app.report); app.report = r; app.focusId = null; }
+startJob('Préparation…');
+const steps = engine === 'builtin' ? ['Construction du plan', 'Rédaction des parties'] : [engine === 'webllm' ? 'Chargement du modèle' : 'Connexion au serveur', 'Plan du rapport'];
+liveReset(steps);
+let stepIdx = 0;
+try {
+if (engine === 'builtin') {
+liveStep(0, 'run');
+const g = builtinGenerate({ topic: f.topic, type, length: f.length, parts: f.parts, instr: f.instr });
+if (isNew) { r.title = g.title; r.subject = g.subtitle; }
+renderEditor(); navigate('editor');
+liveStep(0, 'done'); liveStep(1, 'run');
+for (const sec of g.sections) {
+r.sections.push(newSection('h1', { text: sec.heading }));
+r.sections.push(newSection('p', { text: sec.text }));
+renderSections(); schedulePreview();
+await sleep(70);
+}
+liveStep(1, 'done');
+touch({ title: true }); persist();
+toast('Trame générée : complétez les zones [à compléter]. Pour un texte entièrement rédigé, activez l'IA du navigateur ou un serveur local.', 'ok', { timeout: 7000 });
+return;
+}
+// 1. Moteur
+liveStep(0, 'run'); setJob(engine === 'webllm' ? 'Chargement du modèle…' : 'Connexion…');
+if (engine === 'webllm') {
+await ensureWebLLM(rep => { setJob(`Modèle : ${Math.round((rep.progress || 0) * 100)} %`); liveText(rep.text || ''); });
+}
+liveStep(0, 'done'); stepIdx = 1;
+// 2. Plan
+liveStep(1, 'run'); setJob('Plan du rapport…');
+const nParts = f.parts || (type === 'reunion' ? 5 : 6);
+const planPrompt = `Sujet : ${f.topic}
+Type de document : ${dt.label}
+Ton : ${TONES[f.tone]}
+Nombre de parties : ${nParts}${f.instr ? `
+Consignes : ${f.instr}` : ''}
+Propose un titre précis, un sous-titre court et le plan du document en ${nParts} parties (titres courts, sans sous-parties).
+Réponds EXACTEMENT dans ce format, sans aucun autre texte :
+TITRE: ...
+SOUS-TITRE: ...
+...
+...`;
+const planRaw = await llm([{ role: 'system', content: SYS }, { role: 'user', content: planPrompt }], { maxTokens: 320, temperature: 0.6, onToken: (d, full) => liveText(full) });
+if (app.ai.stopped) throw new DOMException('stop', 'AbortError');
+const plan = parsePlan(planRaw);
+let headings = plan.parts.slice(0, 10);
+if (headings.length < 2) headings = pickPlan(type, nParts).map(p => p[0]);
+if (isNew) { r.title = plan.title || capFirst(f.topic); r.subject = plan.subtitle || dt.sub; }
+liveStep(1, 'done');
+// 3. Parties
+renderEditor(); navigate('editor');
+if (window.innerWidth <= 860) setTab('preview');
+const k = paraCount(f.length);
+const planList = headings.map((h, i) => `${i + 1}. ${h}`).join('
+');
+for (let i = 0; i < headings.length; i++) {
+if (app.ai.stopped) break;
+const h = headings[i];
+const li = liveAdd(`Partie ${i + 1} : ${h}`); liveStep(li, 'run');
+setJob(`Rédaction ${i + 1}/${headings.length} : ${h}`);
+r.sections.push(newSection('h1', { text: h }));
+const p = newSection('p');
+r.sections.push(p);
+app.streamingId = p.id;
+renderSections(); schedulePreview();
+requestAnimationFrame(() => $(`.sec[data-id="${p.id}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+const isConcl = /conclu|bilan|perspective/i.test(h);
+const prompt = `Document : « ${r.title || f.topic} » (${dt.label}, sujet : ${f.topic}).
+Ton : ${TONES[f.tone]}.
+Plan complet :
+${planList}${f.instr ? `
+Consignes de l'auteur : ${f.instr}` : ''}
+Rédige maintenant uniquement le contenu de la partie ${i + 1} « ${h} ».
+Écris ${k} paragraphe${k > 1 ? 's' : ''} de 4 à 6 phrases, en texte simple. Tu peux ajouter une courte liste à puces (lignes commençant par "- ") si c'est vraiment utile.
+N'écris pas le titre de la partie. Ne commence pas par « Voici ».${isConcl ? '' : ' Ne fais pas de conclusion générale du rapport.'} Si une information précise manque, écris [à compléter].`;
+let raw = '';
+try {
+raw = await llm([{ role: 'system', content: SYS }, { role: 'user', content: prompt }], {
+maxTokens: 230 * k + 160,
+onToken: (d, full) => { const t = stripThink(full); setSectionText(p.id, t); liveText(t); }
+});
+} catch (e) { if (e.name === 'AbortError') break; throw e; }
+setSectionText(p.id, cleanLLM(raw, h));
+const ta = $(`.sec[data-id="${p.id}"] textarea`);
+if (ta) { ta.removeAttribute('readonly'); ta.closest('.sec').classList.remove('streaming'); }
+app.streamingId = null;
+liveStep(li, 'done');
+touch();
+}
+// nettoyage d'un éventuel paragraphe vide (arrêt en cours)
+const last = r.sections[r.sections.length - 1];
+if (last && last.type === 'p' && !last.text.trim()) r.sections.pop();
+touch({ title: true }); persist();
+renderSections();
+if (app.ai.stopped) toast('Génération arrêtée. Le texte déjà rédigé est conservé.', 'info');
+else toast('Brouillon terminé ! Relisez et complétez les zones [à compléter].', 'ok', { timeout: 6000 });
+} catch (e) {
+console.error(e);
+if (e.name === 'AbortError' || app.ai.stopped) { toast('Génération arrêtée.', 'info'); }
+else {
+liveStep(stepIdx, 'err');
+toast(e.message || String(e), 'err', { timeout: 10000, action: { label: 'Utiliser la trame', fn: () => { S.engine = 'builtin'; saveSettings(); renderAIEngines(); navigate('ai'); } } });
+if (app.view !== 'ai') navigate('ai');
+}
+const last = r.sections[r.sections.length - 1];
+if (last && last.type === 'p' && !last.text.trim()) { r.sections.pop(); renderSections(); }
+if (!isEmptyReport(r)) persist();
+} finally {
+endJob();
+if (isEmptyReport(app.report)) renderEditor();
+}
+}
+/* =========================================================================
+IA — actions sur un bloc
+========================================================================= /
+function contextFor(id) {
+const secs = app.report.sections, i = secIndex(id);
+let heading = '';
+for (let j = i; j >= 0; j--) if (secs[j].type === 'h1' || secs[j].type === 'h2') { heading = secs[j].text; break; }
+const before = secs.slice(Math.max(0, i - 3), i).filter(s => s.type === 'p' && s.text.trim()).map(s => s.text.trim()).join('
+').slice(-1200);
+return { heading, before };
+}
+function openSectionAIMenu(btn, id) {
+const s = findSec(id); if (!s) return;
+const has = !!s.text.trim();
+const items = [{ label: 'Chati IA · ' + engineLabel() }];
+if (s.type === 'h1' || s.type === 'h2') {
+items.push({ icon: 'plusText', ai: true, title: 'Rédiger cette partie', hint: 'Ajoute un paragraphe sous ce titre', fn: () => runSectionAI(id, 'writeUnder'), disabled: !has });
+items.push({ icon: 'type', ai: true, title: 'Proposer un meilleur titre', fn: () => runSectionAI(id, 'retitle'), disabled: !has });
+} else if (!has) {
+items.push({ icon: 'pen', ai: true, title: 'Rédiger ce paragraphe', hint: 'À partir du titre de la partie', fn: () => runSectionAI(id, 'write') });
+} else {
+items.push({ icon: 'plusText', ai: true, title: 'Développer', hint: 'Enrichir et allonger le texte', fn: () => runSectionAI(id, 'expand') });
+items.push({ icon: 'wand', ai: true, title: 'Reformuler', hint: 'Style plus fluide et professionnel', fn: () => runSectionAI(id, 'rephrase') });
+items.push({ icon: 'check', ai: true, title: "Corriger l'orthographe", hint: 'Grammaire, accords, ponctuation', fn: () => runSectionAI(id, 'fix') });
+items.push({ icon: 'minimize', ai: true, title: 'Résumer', hint: 'En 2 à 3 phrases', fn: () => runSectionAI(id, 'summarize') });
+items.push({ icon: 'pen', ai: true, title: 'Continuer le texte', hint: 'Ajoute la suite logique', fn: () => runSectionAI(id, 'continue') });
+}
+items.push({ sep: true }, { icon: 'cpu', title: 'Réglages du moteur IA', fn: () => navigate('ai') });
+openPop(btn, items);
+}
+async function runSectionAI(id, action) {
+if (app.ai.busy) { toast('Une génération est déjà en cours.', 'warn'); return; }
+const s = findSec(id); if (!s) return;
+const engine = currentEngine();
+const ctx = contextFor(id);
+const docTitle = app.report.title || 'rapport';
+const topic = app.report.title || app.report.subject || ctx.heading || 'le sujet';
+// Moteur hors ligne : seules les actions de rédaction à partir d'un titre sont possibles
+if (engine === 'builtin') {
+if (action === 'write' || action === 'writeUnder') {
+const h = action === 'writeUnder' ? s.text : ctx.heading;
+const text = fillTpl(keyForHeading(h), topic, 2);
+if (action === 'write') { const prev = s.text; setSectionText(id, text); renderSections(); touch(); undoToast(id, prev); }
+else { const p = addSection('p', id); setSectionText(p.id, text); renderSections(); touch(); }
+return;
+}
+toast('Cette action demande un vrai modèle d'IA (navigateur ou serveur local).', 'warn', { action: { label: 'Configurer', fn: () => navigate('ai') } });
+return;
+}
+let target = s, prev = s.text, prompt = '', maxTokens = 600, mode = 'replace', temperature;
+const h = ctx.heading;
+switch (action) {
+case 'write':
+prompt = `Rapport : « ${docTitle} ».
+Rédige le contenu de la partie « ${h || topic} » en 2 paragraphes de 4 à 5 phrases, en texte simple, sans titre.${ctx.before ? `
+Texte qui précède, pour garder la cohérence :
+${ctx.before}` : ''}
+Si une information précise manque, écris [à compléter].`; break;
+case 'writeUnder': {
+target = addSection('p', id); prev = '';
+prompt = `Rapport : « ${docTitle} ».
+Rédige le contenu de la partie « ${s.text} » en 2 paragraphes de 4 à 5 phrases, en texte simple, sans répéter le titre. Si une information précise manque, écris [à compléter].`; break;
+}
+case 'retitle':
+prompt = `Propose un seul titre de partie, court (moins de 9 mots) et professionnel, pour remplacer « ${s.text} » dans le rapport « ${docTitle} ». Réponds uniquement avec le titre.`; maxTokens = 40; temperature = 0.8; break;
+case 'expand':
+prompt = `Développe et enrichis ce texte pour qu'il soit environ deux fois plus long, en gardant le même ton et le même sens. N'invente pas de chiffres ni de faits précis.
+Texte :
+${s.text}`; maxTokens = 900; break;
+case 'rephrase':
+prompt = `Reformule ce texte dans un style plus fluide et professionnel, en gardant exactement le même sens et à peu près la même longueur.
+Texte :
+${s.text}`; maxTokens = 800; break;
+case 'fix':
+prompt = `Corrige l'orthographe, la grammaire, les accords et la ponctuation de ce texte, sans changer le style ni le contenu. Réponds uniquement avec le texte corrigé.
+Texte :
+${s.text}`; maxTokens = 900; temperature = 0.1; break;
+case 'summarize':
+prompt = `Résume ce texte en 2 à 3 phrases claires.
+Texte :
+${s.text}`; maxTokens = 220; break;
+case 'continue':
+prompt = `Voici le début d'un paragraphe du rapport « ${docTitle} »${h ? `, partie « ${h} »` : ''}. Écris la suite logique en 3 à 5 phrases, dans le même style. Réponds uniquement avec la suite, sans répéter le début.
+Début :
+${s.text}`; mode = 'append'; maxTokens = 400; break;
+}
+const label = { write: 'Rédaction', writeUnder: 'Rédaction', retitle: 'Nouveau titre', expand: 'Développement', rephrase: 'Reformulation', fix: 'Correction', summarize: 'Résumé', continue: 'Suite du texte' }[action];
+startJob(label + '…');
+if (target.type !== 'h1' && target.type !== 'h2') { app.streamingId = target.id; const c = $(`.sec[data-id="${target.id}"]`); if (c) { c.classList.add('streaming'); c.querySelector('textarea')?.setAttribute('readonly', ''); } }
+try {
+if (engine === 'webllm' && !wl.engine) setJob('Chargement du modèle…');
+if (engine === 'webllm') await ensureWebLLM(rep => setJob(`Modèle : ${Math.round((rep.progress || 0) * 100)} %`));
+setJob(label + '…');
+const base = mode === 'append' ? prev.replace(/\s+$/, '') + ' ' : '';
+const raw = await llm([{ role: 'system', content: SYS }, { role: 'user', content: prompt }], {
+maxTokens, temperature,
+onToken: (d, full) => { if (target.type === 'h1' || target.type === 'h2') return; setSectionText(target.id, base + stripThink(full)); }
+});
+let out = action === 'retitle' ? cleanTitleLine(stripThink(raw).split('
+').find(l => l.trim()) || '') : cleanLLM(raw, action === 'writeUnder' ? s.text : h);
+if (!out) throw new Error("Le modèle n'a rien renvoyé. Réessayez.");
+setSectionText(target.id, base + out);
+touch();
+if (action === 'writeUnder') toast('Partie rédigée.', 'ok', { action: { label: 'Annuler', fn: () => { app.report.sections = app.report.sections.filter(x => x.id !== target.id); renderSections(); touch(); } } });
+else undoToast(target.id, prev);
+} catch (e) {
+console.error(e);
+if (e.name === 'AbortError' || app.ai.stopped) { toast('Action arrêtée.', 'info'); }
+else { setSectionText(target.id, prev); if (action === 'writeUnder' && !prev) { app.report.sections = app.report.sections.filter(x => x.id !== target.id); } toast(e.message || String(e), 'err', { timeout: 9000 }); }
+} finally {
+endJob(); renderSections(); touch();
+}
+}
+function undoToast(id, prev) {
+toast('Texte mis à jour par l'IA.', 'ok', { action: { label: 'Annuler', fn: () => { if (setSectionText(id, prev)) { renderSections(); touch(); } } } });
+}
+/* =========================================================================
+IA — interface de la page Chati IA
+========================================================================= /
+function renderAIEngines() {
+const e = currentEngine();
+$$('.eng').forEach(el => el.classList.toggle('on', el.dataset.eng === e));
+const b = $('#gpu-badge');
+if (!gpu.checked) { b.className = 'badge'; b.textContent = '…'; }
+else if (gpu.ok) { b.className = 'badge ok'; b.textContent = 'WebGPU OK'; }
+else { b.className = 'badge err'; b.textContent = 'Non compatible'; b.title = gpu.reason; }
+if (gpu.checked && !gpu.ok && !wl.loading) setWLProgress(null, gpu.reason, true);
+$('#wl-load').disabled = gpu.checked && !gpu.ok;
+$('#wl-load').innerHTML = wl.engine && wl.modelId === wlFullId(S.wlModel) ? icon('check') + 'Modèle chargé' : icon('download') + 'Charger le modèle';
+renderEngineStatus();
+}
+function bindAI() {
+$('#wl-model').innerHTML = WL_MODELS.map(m => `<option value="${m.id}">${esc(m.n)} (≈ ${m.mem})</option>`).join('');
+$('#wl-model').value = S.wlModel;
+$('#wl-model').addEventListener('change', e => { S.wlModel = e.target.value; saveSettings(); if (!wl.loading) setWLProgress(null, wl.engine ? 'Un autre modèle est chargé : cliquez sur « Charger le modèle ».' : 'Modèle non chargé.'); renderAIEngines(); });
+$('#wl-load').onclick = async () => {
+if (app.ai.busy) return;
+$('#wl-load').disabled = true;
+try { await ensureWebLLM(); toast('Modèle prêt : vous pouvez générer.', 'ok'); }
+catch (e) { toast(e.message, 'err', { timeout: 9000 }); }
+finally { renderAIEngines(); }
+};
+$('#engines').addEventListener('click', e => { const p = e.target.closest('[data-pick]'); if (!p) return; S.engine = p.dataset.pick; saveSettings(); renderAIEngines(); });
+$('#sv-url').value = S.serverUrl; $('#sv-model').value = S.serverModel; $('#sv-key').value = S.serverKey;
+$('#sv-url').addEventListener('change', e => { S.serverUrl = e.target.value.trim(); srvOK = false; saveSettings(); renderEngineStatus(); });
+$('#sv-model').addEventListener('input', e => { S.serverModel = e.target.value.trim(); saveSettings(); renderEngineStatus(); });
+$('#sv-key').addEventListener('change', e => { S.serverKey = e.target.value.trim(); saveSettings(); });
+$$('[data-preset]').forEach(b => b.onclick = () => { S.serverUrl = b.dataset.preset; $('#sv-url').value = S.serverUrl; srvOK = false; saveSettings(); testServer(); });
+$('#sv-test').onclick = testServer;
+$('#ai-go').onclick = generateReport;
+$('#ai-topic').addEventListener('keydown', e => { if (e.key === 'Enter') generateReport(); });
+const seg = (sel, key) => $(sel).addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b) return; app.ui[key] = b.dataset.v; $$(sel + ' button').forEach(x => x.classList.toggle('on', x === b)); store.set(K.ui, app.ui); });
+seg('#ai-length', 'aiLength'); seg('#ai-target', 'aiTarget');
+$$('#ai-length button').forEach(x => x.classList.toggle('on', x.dataset.v === app.ui.aiLength));
+$$('#ai-target button').forEach(x => x.classList.toggle('on', x.dataset.v === app.ui.aiTarget));
+}
+/* =========================================================================
+INITIALISATION
+========================================================================= /
+function migrateOld() {
+if (store.get(K.migrated, false)) return;
+const old = store.get('reports_v2', []);
+if (Array.isArray(old) && old.length) {
+for (const o of old) { const r = normalizeReport(o); if (!isEmptyReport(r) && !app.history.some(h => h.id === r.id)) app.history.push(r); }
+store.set(K.hist, app.history);
+}
+store.set(K.migrated, true);
+}
+function init() {
+hydrateIcons(document);
+S = { ...DEFAULT_SETTINGS, ...store.get(K.settings, {}) };
+app.ui = { ...app.ui, ...store.get(K.ui, {}) };
+app.history = (store.get(K.hist, []) || []).map(normalizeReport);
+migrateOld();
+const last = store.get(K.last, null);
+const found = app.history.find(h => h.id === last);
+app.report = found ? normalizeReport(clone(found)) : newReport();
+for (const [id, closed] of Object.entries(app.ui.closed || {})) if (closed) $('#' + id)?.classList.add('closed');
+// Navigation & barre du haut
+$$('.nav-item').forEach(b => b.onclick = () => navigate(b.dataset.nav));
+$('#menu-btn').onclick = openSidebar;
+$('#overlay').onclick = closeSidebar;
+$$('.mob-tabs button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+$('#btn-new').onclick = newDoc;
+$('#btn-save').onclick = () => { if (isEmptyReport(app.report)) return toast('Rien à enregistrer pour le moment.', 'info'); if (persist()) toast('Rapport enregistré dans l'historique.', 'ok'); };
+$('#btn-export').onclick = e => openExportMenu(e.currentTarget);
+$('#ai-stop').onclick = stopJob;
+$('#zoom-in').onclick = () => stepZoom(0.1);
+$('#zoom-out').onclick = () => stepZoom(-0.1);
+$('#zoom-fit').onclick = fitZoom;
+new ResizeObserver(() => { if (app.zoom === 'fit') applyZoom(); }).observe($('#stage'));
+let lastW = window.innerWidth;
+window.addEventListener('resize', () => { const w = window.innerWidth; if ((lastW <= 860) !== (w <= 860)) { renderPreview(); autosizeAll(); } lastW = w; });
+// Raccourcis clavier
+document.addEventListener('keydown', e => {
+const mod = e.ctrlKey || e.metaKey;
+if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); $('#btn-save').click(); }
+else if (mod && e.key.toLowerCase() === 'p') { e.preventDefault(); printDoc(); }
+else if (e.key === 'Escape') { closePop(); closeSidebar(); }
+});
+// Impression lancée depuis le menu du navigateur
+window.addEventListener('beforeprint', () => { const root = $('#print-root'); if (!root.innerHTML.trim()) root.innerHTML = buildDoc(app.report, 'print'); });
+window.addEventListener('afterprint', () => { $('#print-root').innerHTML = ''; });
+window.addEventListener('beforeunload', () => { if (saveTimer) persist(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && saveTimer) persist(); });
+bindEditor(); bindHistory(); bindAI();
+renderEditor();
+navigate('editor');
+updateMeter();
+renderAIEngines();
+checkGPU().then(() => {
+if (!S.engine) { S.engine = gpu.ok ? 'webllm' : 'builtin'; saveSettings(); }
+renderAIEngines();
+});
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
