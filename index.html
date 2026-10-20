@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -22,7 +21,7 @@
 --shadow-lg:0 2px 6px rgba(20,22,28,.08),0 18px 48px rgba(20,22,28,.16);
 --font-ui:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
 }
-{box-sizing:border-box}
+*{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{font-family:var(--font-ui);font-size:14px;line-height:1.45;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow:hidden}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
@@ -35,7 +34,6 @@ input,textarea,select{font:inherit;color:inherit}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 ::selection{background:#cdd9ff}
-/* ---------- Layout ---------- /
 .app{display:grid;grid-template-columns:244px minmax(0,1fr);height:100dvh}
 .sidebar{background:var(--ink);color:#e9eaee;display:flex;flex-direction:column;min-height:0;z-index:50}
 .brand{display:flex;align-items:center;gap:10px;padding:20px 20px 18px}
@@ -83,7 +81,6 @@ input,textarea,select{font:inherit;color:inherit}
 #ai-chip-text{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .views{flex:1;min-height:0;position:relative}
 .view{position:absolute;inset:0;display:flex;min-height:0}
-/* ---------- Editor ---------- /
 .editor{display:grid;grid-template-columns:minmax(360px,470px) minmax(0,1fr);width:100%;min-height:0}
 .edit-pane{background:#fbfaf7;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0}
 .edit-scroll{flex:1;overflow:auto;padding:18px 18px 8px;display:flex;flex-direction:column;gap:14px}
@@ -99,7 +96,7 @@ input,textarea,select{font:inherit;color:inherit}
 .field{display:flex;flex-direction:column;gap:5px}
 .field>span{font-size:12px;font-weight:600;color:var(--muted)}
 .row{display:flex;gap:10px}
-.row>{flex:1;min-width:0}
+.row>*{flex:1;min-width:0}
 .txt{width:100%;min-width:0;height:38px;border:1px solid var(--line);border-radius:var(--r-sm);padding:0 11px;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
 textarea.txt{height:auto;padding:10px 11px;resize:vertical;line-height:1.5}
 .txt:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
@@ -182,7 +179,6 @@ select.txt{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .pv-stats b{color:var(--text);font-weight:600}
 .stage{flex:1;overflow:auto;padding:28px 24px 60px}
 .zoomer{width:210mm;margin:0 auto;transform-origin:top center}
-/* ---------- Document (aperçu, impression, PDF) ---------- /
 .doc{--doc-accent:#2448c8;--doc-accent-soft:#f2f4fc;--doc-accent-line:#c8d1f1;--df-body:'Source Serif 4',Georgia,'Times New Roman',serif;--df-head:'Source Serif 4',Georgia,serif;color:#1f2329;font-family:var(--df-body);font-size:11pt;line-height:1.62}
 .doc.f-modern{--df-body:'Inter',system-ui,Arial,sans-serif;--df-head:'Inter',system-ui,Arial,sans-serif;font-size:10.5pt}
 .doc.f-elegant{--df-body:'Inter',system-ui,Arial,sans-serif;--df-head:'Playfair Display',Georgia,serif;font-size:10.5pt}
@@ -233,7 +229,6 @@ select.txt{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .d-ghost-img{border:1.5px dashed #d8d8d4;border-radius:2mm;padding:12mm;color:#b6b9bf;font-family:'Inter',sans-serif;font-size:9pt;text-align:center;margin:5mm 0}
 .d-stream{background:linear-gradient(90deg,transparent,#f3eeff,transparent);background-size:200% 100%;animation:shimmer 1.6s linear infinite}
 @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
-/* ---------- Chati IA ---------- /
 .ai-view{overflow:auto;width:100%}
 .ai-wrap{max-width:1120px;margin:0 auto;padding:30px 24px 80px;display:flex;flex-direction:column;gap:18px}
 .ai-hero{display:flex;align-items:center;gap:16px}
@@ -289,7 +284,6 @@ select.txt{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .help-b{padding:0 18px 16px;color:#3c4048;font-size:13px;line-height:1.6;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 .help-b h4{margin:0 0 4px;font-size:13px}
 .help-b p{margin:0 0 6px}
-/* ---------- Historique ---------- /
 .hist-view{overflow:auto;width:100%}
 .hist-wrap{max-width:1180px;margin:0 auto;padding:30px 24px 80px}
 .hist-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
@@ -310,7 +304,6 @@ select.txt{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .hcard-f .open-tag{margin-right:auto;font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:999px;margin-left:8px}
 .hcard-f .sp{margin-right:auto}
 .hist-empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);background:#fff;border:1.5px dashed var(--line-2);border-radius:14px}
-/* ---------- Popover, toasts ---------- /
 .pop{position:fixed;z-index:200;min-width:230px;max-width:320px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg);padding:6px;animation:rise .12s ease-out}
 .pop-item{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;padding:9px 10px;border-radius:8px}
 .pop-item:hover:not(:disabled){background:#f4f2ee}
@@ -332,7 +325,6 @@ select.txt{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .overlay.on{opacity:1;pointer-events:auto}
 .pdf-host{position:fixed;left:-12000px;top:0;width:210mm;background:#fff}
 #print-root{display:none}
-/* ---------- Responsive ---------- /
 @media (max-width:1100px){
 .ai-grid{grid-template-columns:1fr}
 .help-b{grid-template-columns:1fr}
@@ -363,7 +355,6 @@ select.txt{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .ai-chip #ai-chip-text{max-width:110px}
 }
 @media (hover:none){ .sec-head .ib{width:34px;height:34px} }
-/* ---------- Impression (PDF vectoriel) ---------- /
 @page{size:A4;margin:18mm 18mm 20mm;@bottom-right{content:counter(page) " / " counter(pages);font-family:Inter,Arial,sans-serif;font-size:8pt;color:#9a9ea6}}
 @page cover{margin:0;@bottom-right{content:none}}
 @media print{
@@ -382,7 +373,6 @@ html,body{height:auto!important;overflow:visible!important;background:#fff!impor
 </head>
 <body>
 <div class="app" id="app">
-<!-- ============ SIDEBAR ============ -->
 <aside class="sidebar" id="sidebar">
 <div class="brand">
 <div class="brand-mark"><i data-i="file"></i></div>
@@ -400,7 +390,6 @@ html,body{height:auto!important;overflow:visible!important;background:#fff!impor
 </div>
 </aside>
 <div class="overlay" id="overlay"></div>
-<!-- ============ MAIN ============ -->
 <div class="main">
 <header class="topbar">
 <button class="ib menu-btn" id="menu-btn" aria-label="Menu"><i data-i="menu"></i></button>
@@ -415,7 +404,6 @@ html,body{height:auto!important;overflow:visible!important;background:#fff!impor
 <button class="btn btn-primary" id="btn-save" title="Enregistrer (Ctrl+S)"><i data-i="save"></i><span class="lbl">Enregistrer</span></button>
 </header>
 <div class="views">
-<!-- ============ EDITOR ============ -->
 <section class="view" id="view-editor">
 <div class="editor" id="editor" data-tab="edit">
 <div class="mob-tabs">
@@ -469,7 +457,6 @@ html,body{height:auto!important;overflow:visible!important;background:#fff!impor
 </div>
 </div>
 </section>
-<!-- ============ CHATI IA ============ -->
 <section class="view ai-view" id="view-ai" hidden>
 <div class="ai-wrap">
 <div class="ai-hero">
@@ -570,7 +557,6 @@ html,body{height:auto!important;overflow:visible!important;background:#fff!impor
 </details>
 </div>
 </section>
-<!-- ============ HISTORY ============ -->
 <section class="view hist-view" id="view-history" hidden>
 <div class="hist-wrap">
 <div class="hist-top">
@@ -592,11 +578,6 @@ html,body{height:auto!important;overflow:visible!important;background:#fff!impor
 <input type="file" id="file-import" accept=".json,.md,.markdown,.txt,application/json,text/markdown,text/plain" hidden>
 <script>
 'use strict';
-/* =========================================================================
-Rapport Pro — fichier unique. Données stockées dans le navigateur
-(localStorage). Bibliothèques d'export et IA chargées à la demande.
-========================================================================= /
-/* ---------- Petits utilitaires ---------- /
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'id-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
@@ -613,10 +594,9 @@ if (s < 3600) return `il y a ${Math.floor(s / 60)} min`;
 if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`;
 return new Date(ts).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
-function slug(s) { return (String(s || 'rapport').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w- ]+/g, '').trim().replace(/\s+/g, '_').slice(0, 60)) || 'rapport'; }
+function slug(s) { return (String(s || 'rapport').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w- ]+/g, '').trim().replace(/\s+/g, '_').slice(0, 60)) || 'rapport'; }
 function wordCount(t) { const m = String(t || '').match(/[\p{L}\p{N}][\p{L}\p{N}'’-]/gu); return m ? m.length : 0; }
-function normTxt(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
-/* ---------- Icônes (SVG inline, nettes à toutes les résolutions) ---------- /
+function normTxt(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
 const ICONS = {
 menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
 x: '<path d="M18 6 6 18M6 6l12 12"/>',
@@ -677,7 +657,6 @@ t.innerHTML = icon(el.dataset.i, el.className).trim();
 el.replaceWith(t.content.firstChild);
 });
 }
-/* ---------- Stockage local ---------- /
 const K = { hist: 'rp3_history', last: 'rp3_last', settings: 'rp3_settings', migrated: 'rp3_migrated_v2', ui: 'rp3_ui' };
 const store = {
 get(k, def) { try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch (e) { return def; } },
@@ -688,7 +667,6 @@ let n = 0;
 try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); n += (k.length + (localStorage.getItem(k) || '').length) * 2; } } catch (e) { }
 return n;
 }
-/* ---------- Modèle de données ---------- /
 const ACCENTS = [
 { id: 'blue', c: '#2448c8', n: 'Bleu' }, { id: 'teal', c: '#0f7a6c', n: 'Émeraude' },
 { id: 'wine', c: '#9b2242', n: 'Bordeaux' }, { id: 'ink', c: '#2b2f38', n: 'Graphite' },
@@ -715,7 +693,6 @@ if (!FONTS.some(f => f.id === out.font)) out.font = 'classic';
 out.title = String(out.title || ''); out.subject = String(out.subject || '');
 out.sections = (Array.isArray(r.sections) ? r.sections : []).map(s => {
 if (!s || typeof s !== 'object') return null;
-// Ancien format (v2) : heading / paragraph / image
 if (s.type === 'heading') return newSection('h1', { id: s.id || uid(), text: s.title || '' });
 if (s.type === 'paragraph') return newSection('p', { id: s.id || uid(), text: s.content || '' });
 if (s.type === 'image') return newSection('img', { id: s.id || uid(), src: s.image || '', caption: s.title || '' });
@@ -730,7 +707,6 @@ let n = wordCount(r.title) + wordCount(r.subject);
 for (const s of r.sections) n += wordCount(s.text) + wordCount(s.caption);
 return n;
 }
-/* ---------- État de l'application ---------- /
 const DEFAULT_SETTINGS = { engine: null, wlModel: 'Qwen2.5-1.5B-Instruct', serverUrl: 'http://localhost:11434/v1', serverModel: '', serverKey: '', temperature: 0.7 };
 let S = { ...DEFAULT_SETTINGS };
 const app = {
@@ -739,14 +715,13 @@ streamingId: null, ai: { busy: false, stopped: false, abort: null },
 ui: { aiLength: 'moyen', aiTarget: 'new', closed: {} }
 };
 function saveSettings() { store.set(K.settings, S); }
-/* ---------- Enregistrement automatique ---------- /
 let saveTimer = null, previewTimer = null;
 function setSaveState(state) {
 const el = $('#save-state');
 el.className = 'save-state ' + state;
 if (state === 'saved') el.innerHTML = icon('check') + 'Enregistré · ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 else if (state === 'pending') el.textContent = 'Modifications…';
-else if (state === 'error') el.innerHTML = icon('alert') + 'Échec de l'enregistrement';
+else if (state === 'error') el.innerHTML = icon('alert') + "Échec de l'enregistrement";
 else el.textContent = 'Brouillon vide';
 }
 function touch(opts = {}) {
@@ -781,7 +756,6 @@ const t = app.report.title.trim() || 'Sans titre';
 $('#top-title').textContent = t;
 document.title = (app.report.title.trim() ? app.report.title.trim() + ' · ' : '') + 'Rapport Pro';
 }
-/* ---------- Toasts ---------- /
 function toast(msg, kind = 'info', opts = {}) {
 const box = $('#toasts');
 const el = document.createElement('div');
@@ -802,7 +776,6 @@ box.appendChild(el);
 while (box.children.length > 4) box.firstChild.remove();
 setTimeout(() => el.remove(), opts.timeout || (opts.action ? 9000 : 4200));
 }
-/* ---------- Popover (menus) ---------- /
 function openPop(anchor, items) {
 const pop = $('#pop');
 pop.innerHTML = items.map((it, i) => {
@@ -823,9 +796,6 @@ pop._anchor = anchor;
 function closePop() { const p = $('#pop'); p.hidden = true; p._anchor = null; }
 document.addEventListener('mousedown', e => { const p = $('#pop'); if (!p.hidden && !p.contains(e.target) && !(p._anchor && p._anchor.contains(e.target))) closePop(); });
 window.addEventListener('resize', closePop);
-/* =========================================================================
-NAVIGATION
-========================================================================= /
 function navigate(view) {
 app.view = view;
 for (const v of ['editor', 'ai', 'history']) $('#view-' + v).hidden = v !== view;
@@ -843,9 +813,6 @@ $('#editor').dataset.tab = tab;
 $$('.mob-tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
 requestAnimationFrame(() => { if (tab === 'edit') autosizeAll(); else { renderPreview(); fitZoom(); } });
 }
-/* =========================================================================
-ÉDITEUR
-========================================================================= /
 function renderEditor() {
 const r = app.report;
 $$('[data-meta]').forEach(el => { el.value = r[el.dataset.meta] || ''; });
@@ -872,7 +839,7 @@ case 'h2': body = `<input class="sec-in h2" data-f="text" value="${esc(s.text)}"
 case 'p': body = `<textarea class="sec-ta" data-f="text" rows="3" ${streaming ? 'readonly' : ''} placeholder="Écrivez votre texte… (gras, italique, listes avec « - »)">${esc(s.text)}</textarea>`; break;
 case 'quote': body = `<textarea class="sec-ta" data-f="text" rows="2" ${streaming ? 'readonly' : ''} placeholder="Note, remarque importante, définition…">${esc(s.text)}</textarea>`; break;
 case 'img': body = `<div class="img-row">
-<label class="img-drop ${s.src ? 'has' : ''}" title="Choisir ou déposer une image">${s.src ? `<img src="${s.src}" alt="">` : icon('image') + '<span>Choisir ou<br>déposer</span>'}<input type="file" accept="image/" data-f="file" hidden></label>
+<label class="img-drop ${s.src ? 'has' : ''}" title="Choisir ou déposer une image">${s.src ? `<img src="${s.src}" alt="">` : icon('image') + '<span>Choisir ou<br>déposer</span>'}<input type="file" accept="image/*" data-f="file" hidden></label>
 <div class="img-opts">
 <input class="txt sm" data-f="caption" value="${esc(s.caption)}" placeholder="Légende (optionnel)">
 <label class="range"><span>Largeur</span><input type="range" min="25" max="100" step="5" value="${s.width || 100}" data-f="width"><b>${s.width || 100}%</b></label>
@@ -944,7 +911,6 @@ const c = { ...clone(app.report.sections[i]), id: uid() };
 app.report.sections.splice(i + 1, 0, c);
 renderSections(); touch();
 }
-/* --- Images : redimensionnées et compressées pour tenir dans le stockage --- /
 function readFileAsDataURL(file) { return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => rej(fr.error); fr.readAsDataURL(file); }); }
 function loadImage(src) { return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('Image illisible')); im.src = src; }); }
 async function processImage(file) {
@@ -966,15 +932,14 @@ ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h)
 return cv.toDataURL('image/jpeg', 0.86);
 }
 async function setImage(id, file) {
-if (!file || !/^image//.test(file.type)) { toast('Ce fichier n'est pas une image.', 'warn'); return; }
+if (!file || !/^image\//.test(file.type)) { toast("Ce fichier n'est pas une image.", 'warn'); return; }
 try {
 const s = findSec(id); if (!s) return;
 s.src = await processImage(file);
-if (!s.caption) s.caption = file.name.replace(/.[^.]+$/, '').replace(/[_-]+/g, ' ');
+if (!s.caption) s.caption = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ');
 renderSections(); touch();
 } catch (e) { toast("Impossible de lire l'image : " + e.message, 'err'); }
 }
-/* --- Événements de l'éditeur (délégation) --- /
 function bindEditor() {
 $$('[data-meta]').forEach(el => el.addEventListener('input', () => {
 app.report[el.dataset.meta] = el.value;
@@ -1013,7 +978,6 @@ app.focusId = id;
 list.addEventListener('keydown', e => {
 if (e.key === 'Enter' && e.target.classList.contains('sec-in')) { e.preventDefault(); const c = e.target.closest('.sec'); addSection('p', c.dataset.id); }
 });
-// Glisser-déposer : réorganisation des blocs + dépôt d'image
 let dragId = null;
 list.addEventListener('mousedown', e => { const g = e.target.closest('.grip'); if (g) g.closest('.sec').draggable = true; });
 list.addEventListener('dragstart', e => {
@@ -1053,27 +1017,23 @@ renderSections(); touch();
 });
 document.addEventListener('mouseup', () => { if (!dragId) $$('.sec[draggable="true"]', list).forEach(c => c.draggable = false); });
 }
-/* =========================================================================
-RENDU DU DOCUMENT (aperçu, impression, PDF)
-========================================================================= /
 function inlineMD(s) {
 let h = esc(s);
-h = h.replace(/**(.+?)**/g, '<strong>$1</strong>');
-h = h.replace(/(^|[^\w])*(?!\s)([^]+?)*(?!*)/g, '$1<em>$2</em>');
+h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+h = h.replace(/(^|[^\w])\*(?!\s)([^*]+?)\*(?!\*)/g, '$1<em>$2</em>');
 h = h.replace(/(^|\W)_(?!\s)([^_]+?)_(?=\W|$)/g, '$1<em>$2</em>');
 return h;
 }
 function parseBlocks(text) {
-const lines = String(text || '').replace(/\r/g, '').split('
-');
+const lines = String(text || '').replace(/\r/g, '').split('\n');
 const blocks = []; let para = [], list = null;
 const flushP = () => { if (para.length) { blocks.push({ t: 'p', lines: para }); para = []; } };
 const flushL = () => { if (list) { blocks.push(list); list = null; } };
 for (const raw of lines) {
 const line = raw.replace(/\s+$/, ''); let m;
 if (!line.trim()) { flushP(); flushL(); continue; }
-if ((m = line.match(/^\s[-•–]\s+(.)$/))) { flushP(); if (!list || list.t !== 'ul') { flushL(); list = { t: 'ul', items: [] }; } list.items.push(m[1]); continue; }
-if ((m = line.match(/^\s\d+[.)]\s+(.)$/))) { flushP(); if (!list || list.t !== 'ol') { flushL(); list = { t: 'ol', items: [] }; } list.items.push(m[1]); continue; }
+if ((m = line.match(/^\s*[-•–]\s+(.*)$/))) { flushP(); if (!list || list.t !== 'ul') { flushL(); list = { t: 'ul', items: [] }; } list.items.push(m[1]); continue; }
+if ((m = line.match(/^\s*\d+[.)]\s+(.*)$/))) { flushP(); if (!list || list.t !== 'ol') { flushL(); list = { t: 'ol', items: [] }; } list.items.push(m[1]); continue; }
 flushL(); para.push(line.trim());
 }
 flushP(); flushL();
@@ -1085,7 +1045,7 @@ return parseBlocks(text).map(b => b.t === 'p'
 : `<${b.t}>${b.items.map(x => `<li>${inlineMD(x)}</li>`).join('')}</${b.t}>`).join('');
 }
 function accentOf(r) { return (ACCENTS.find(a => a.id === r.accent) || ACCENTS[0]).c; }
-function tint(hex, k) { // mélange avec du blanc (k = part de la couleur)
+function tint(hex, k) {
 const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v * k + 255 * (1 - k)));
 return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
 }
@@ -1103,7 +1063,6 @@ const nums = r.numbering ? headingNumbers(r) : {};
 const title = r.title.trim() || (screen ? 'Titre du rapport' : 'Rapport');
 const metaBits = [r.author && esc(r.author), r.date && esc(fmtDate(r.date))].filter(Boolean);
 if (!metaBits.length && screen) metaBits.push('<span style="opacity:.6">Auteur · date</span>');
-// En-tête ou page de garde
 let head = '';
 const sheets = [];
 if (r.cover) {
@@ -1115,13 +1074,11 @@ ${r.org ? `<div class="d-org">${esc(r.org)}</div>` : ''}
 } else {
 head = `<header class="d-head">${r.org ? `<div class="d-org">${esc(r.org)}</div>` : ''}<h1 class="d-title">${inlineMD(title)}</h1>${r.subject ? `<div class="d-sub">${inlineMD(r.subject)}</div>` : ''}${metaBits.length ? `<div class="d-meta">${metaBits.map(m => `<span>${m}</span>`).join('')}</div>` : ''}</header>`;
 }
-// Sommaire
 let toc = '';
 const heads = r.sections.filter(s => (s.type === 'h1' || s.type === 'h2'));
 if (r.toc && heads.length) {
 toc = `<nav class="d-toc"><h4>Sommaire</h4><ol>${heads.map(s => `<li class="${s.type === 'h2' ? 'l2' : 'l1'}">${nums[s.id] ? `<span class="n">${nums[s.id]}</span>` : ''}<span>${inlineMD(s.text || 'Sans titre')}</span><span class="lead"></span></li>`).join('')}</ol></nav>`;
 }
-// Contenu, découpé aux sauts de page
 const pages = [[]];
 let fig = 0;
 for (const s of r.sections) {
@@ -1175,7 +1132,6 @@ $('#st-words').textContent = w.toLocaleString('fr-FR');
 $('#st-pages').textContent = pages;
 $('#st-read').textContent = Math.max(1, Math.round(w / 230));
 }
-/* --- Zoom de l'aperçu --- /
 const SHEET_PX = 793.7;
 function fitScale() { const st = $('#stage'); const avail = st.clientWidth - (window.innerWidth <= 860 ? 16 : 48); return Math.max(0.25, Math.min(1.25, avail / SHEET_PX)); }
 function applyZoom() {
@@ -1185,9 +1141,6 @@ $('#zoom-val').textContent = Math.round(z * 100) + '%';
 }
 function fitZoom() { app.zoom = 'fit'; applyZoom(); }
 function stepZoom(d) { const cur = app.zoom === 'fit' ? fitScale() : app.zoom; app.zoom = Math.max(0.3, Math.min(2, Math.round((cur + d) * 10) / 10)); applyZoom(); }
-/* =========================================================================
-EXPORTS
-========================================================================= /
 const libs = {};
 function loadScript(urls, test) {
 const key = urls[0];
@@ -1221,7 +1174,7 @@ function waitImages(root) { return Promise.all($$('img', root).map(im => im.comp
 function openExportMenu(anchor) {
 openPop(anchor, [
 { label: 'Exporter ce rapport' },
-{ icon: 'printer', title: 'PDF haute qualité', hint: 'Via l'impression : texte net et sélectionnable', fn: printDoc },
+{ icon: 'printer', title: 'PDF haute qualité', hint: "Via l'impression : texte net et sélectionnable", fn: printDoc },
 { icon: 'pdf', title: 'Télécharger en PDF', hint: 'Fichier direct, rendu image HD', fn: exportPDF },
 { icon: 'word', title: 'Word (.docx)', hint: 'Modifiable, images incluses', fn: exportDocx },
 { icon: 'hash', title: 'Markdown (.md)', hint: 'Texte brut structuré', fn: exportMarkdown },
@@ -1229,7 +1182,7 @@ openPop(anchor, [
 { icon: 'code', title: 'Sauvegarde (.json)', hint: 'Pour réimporter plus tard', fn: () => exportJSON([app.report], fileName('json')) }
 ]);
 }
-function guardEmpty() { if (isEmptyReport(app.report)) { toast('Le rapport est vide : ajoutez du contenu avant d'exporter.', 'warn'); return true; } return false; }
+function guardEmpty() { if (isEmptyReport(app.report)) { toast("Le rapport est vide : ajoutez du contenu avant d'exporter.", 'warn'); return true; } return false; }
 async function printDoc() {
 if (guardEmpty()) return;
 persist();
@@ -1289,12 +1242,12 @@ const accent = accentOf(r).slice(1).toUpperCase();
 const fonts = { classic: ['Georgia', 'Georgia'], modern: ['Calibri', 'Calibri'], elegant: ['Georgia', 'Calibri'] }[r.font] || ['Georgia', 'Georgia'];
 const nums = r.numbering ? headingNumbers(r) : {};
 const runs = (text, base = {}) => {
-const out = [], re = /(**[^]+?**|*[^\s][^]?*)/g;
+const out = [], re = /(\*\*[^*]+?\*\*|\*[^\s*][^*]*?\*)/g;
 let last = 0, m; const t = String(text || '');
 while ((m = re.exec(t))) {
 if (m.index > last) out.push(new D.TextRun({ text: t.slice(last, m.index), ...base }));
 const tok = m[0];
-if (tok.startsWith('')) out.push(new D.TextRun({ text: tok.slice(2, -2), bold: true, ...base }));
+if (tok.startsWith('**')) out.push(new D.TextRun({ text: tok.slice(2, -2), bold: true, ...base }));
 else out.push(new D.TextRun({ text: tok.slice(1, -1), italics: true, ...base }));
 last = m.index + tok.length;
 }
@@ -1380,7 +1333,7 @@ toast('Document Word téléchargé.', 'ok');
 function reportToMarkdown(r) {
 const nums = r.numbering ? headingNumbers(r) : {};
 const out = [`# ${r.title || 'Rapport'}`];
-if (r.subject) out.push(`${r.subject}`);
+if (r.subject) out.push(`\n${r.subject}`);
 const meta = [r.author, r.org, r.date && fmtDate(r.date)].filter(Boolean).join(' · ');
 if (meta) out.push(meta);
 let fig = 0;
@@ -1388,15 +1341,11 @@ for (const s of r.sections) {
 if (s.type === 'h1') out.push(`## ${nums[s.id] ? nums[s.id] + ' ' : ''}${s.text}`);
 else if (s.type === 'h2') out.push(`### ${nums[s.id] ? nums[s.id] + ' ' : ''}${s.text}`);
 else if (s.type === 'p' && s.text.trim()) out.push(s.text.trim());
-else if (s.type === 'quote' && s.text.trim()) out.push(s.text.trim().split('
-').map(l => '> ' + l).join('
-'));
+else if (s.type === 'quote' && s.text.trim()) out.push(s.text.trim().split('\n').map(l => '> ' + l).join('\n'));
 else if (s.type === 'img' && s.src) { fig++; out.push(`[Figure ${fig}${s.caption ? ' : ' + s.caption : ''}]`); }
 else if (s.type === 'pb') out.push('---');
 }
-return out.join('
-') + '
-';
+return out.join('\n') + '\n';
 }
 function exportMarkdown() { if (guardEmpty()) return; downloadBlob(new Blob([reportToMarkdown(app.report)], { type: 'text/markdown;charset=utf-8' }), fileName('md')); toast('Fichier Markdown téléchargé.', 'ok'); }
 function exportJSON(reports, name) {
@@ -1406,33 +1355,30 @@ toast(`Sauvegarde téléchargée (${reports.length} rapport${reports.length > 1 
 }
 function markdownToReport(md, name) {
 const r = newReport(app.report);
-const lines = md.replace(/\r/g, '').split('
-');
+const lines = md.replace(/\r/g, '').split('\n');
 let buf = [], quote = [];
-const flush = () => { const t = buf.join('
-').trim(); if (t) r.sections.push(newSection('p', { text: t })); buf = []; };
-const flushQ = () => { const t = quote.join('
-').trim(); if (t) r.sections.push(newSection('quote', { text: t })); quote = []; };
+const flush = () => { const t = buf.join('\n').trim(); if (t) r.sections.push(newSection('p', { text: t })); buf = []; };
+const flushQ = () => { const t = quote.join('\n').trim(); if (t) r.sections.push(newSection('quote', { text: t })); quote = []; };
 for (const line of lines) {
 let m;
 if ((m = line.match(/^#\s+(.+)/)) && !r.title) { flush(); flushQ(); r.title = m[1].trim(); continue; }
-if ((m = line.match(/^#{1,2}\s+(.+)/))) { flush(); flushQ(); r.sections.push(newSection('h1', { text: m[1].replace(/^\d+(.\d+).?\s+/, '').trim() })); continue; }
-if ((m = line.match(/^#{3,6}\s+(.+)/))) { flush(); flushQ(); r.sections.push(newSection('h2', { text: m[1].replace(/^\d+(.\d+).?\s+/, '').trim() })); continue; }
-if ((m = line.match(/^>\s?(.)/))) { flush(); quote.push(m[1]); continue; }
-if (/^(-{3,}|*{3,})\s$/.test(line)) { flush(); flushQ(); r.sections.push(newSection('pb')); continue; }
+if ((m = line.match(/^#{1,2}\s+(.+)/))) { flush(); flushQ(); r.sections.push(newSection('h1', { text: m[1].replace(/^\d+(\.\d+)?\.?\s+/, '').trim() })); continue; }
+if ((m = line.match(/^#{3,6}\s+(.+)/))) { flush(); flushQ(); r.sections.push(newSection('h2', { text: m[1].replace(/^\d+(\.\d+)?\.?\s+/, '').trim() })); continue; }
+if ((m = line.match(/^>\s?(.*)/))) { flush(); quote.push(m[1]); continue; }
+if (/^(-{3,}|\*{3,})\s*$/.test(line)) { flush(); flushQ(); r.sections.push(newSection('pb')); continue; }
 flushQ();
 if (!line.trim()) { flush(); continue; }
 buf.push(line);
 }
 flush(); flushQ();
-if (!r.title) r.title = name.replace(/.[^.]+$/, '');
+if (!r.title) r.title = name.replace(/\.[^.]+$/, '');
 return r;
 }
 async function importFile(file) {
 try {
 const text = await file.text();
 let reports = [];
-if (/.json$/i.test(file.name) || /^\s[[{]/.test(text)) {
+if (/\.json$/i.test(file.name) || /^\s*[\[{]/.test(text)) {
 const data = JSON.parse(text);
 const arr = Array.isArray(data) ? data : Array.isArray(data.reports) ? data.reports : [data];
 reports = arr.map(normalizeReport);
@@ -1450,9 +1396,6 @@ if (reports.length === 1) { openReport(reports[0].id); toast('Rapport importé.'
 else { renderHistory(); toast(`${reports.length} rapports importés.`, 'ok'); }
 } catch (e) { toast('Fichier illisible : ' + e.message, 'err'); }
 }
-/* =========================================================================
-HISTORIQUE
-========================================================================= /
 function renderHistory() {
 const q = normTxt($('#h-search').value);
 const grid = $('#hist-grid');
@@ -1518,9 +1461,6 @@ renderHistory(); toast('Rapport supprimé.', 'info');
 }
 });
 }
-/* =========================================================================
-IA — moteurs
-========================================================================= /
 const WEBLLM_URL = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.86/+esm';
 const WL_MODELS = [
 { id: 'Qwen2.5-1.5B-Instruct', n: 'Qwen 2.5 · 1,5 Md — équilibré (recommandé)', mem: '1,6 Go' },
@@ -1600,10 +1540,10 @@ if (e === 'webllm') { dot.className = 'dot ' + (wl.engine ? 'ok' : gpu.ok ? 'war
 else if (e === 'server') { dot.className = 'dot ' + (srvOK ? 'ok' : 'warn'); lb.textContent = 'IA : serveur local' + (S.serverModel ? ' · ' + S.serverModel : ''); }
 else { dot.className = 'dot off'; lb.textContent = 'IA : trame hors ligne'; }
 const hint = $('#ai-go-hint');
-if (hint) hint.textContent = e === 'webllm' ? (wl.engine ? 'Le modèle est chargé : la génération démarre tout de suite.' : 'Le modèle sera téléchargé au premier lancement (une seule fois).') : e === 'server' ? 'Le texte sera généré par votre serveur local.' : 'Génération instantanée d'une trame rédigée à compléter.';
+if (hint) hint.textContent = e === 'webllm' ? (wl.engine ? 'Le modèle est chargé : la génération démarre tout de suite.' : 'Le modèle sera téléchargé au premier lancement (une seule fois).') : e === 'server' ? 'Le texte sera généré par votre serveur local.' : "Génération instantanée d'une trame rédigée à compléter.";
 }
 let srvOK = false;
-function serverBase() { return (S.serverUrl || '').trim().replace(//+$/, '').replace(//chat/completions$/, ''); }
+function serverBase() { return (S.serverUrl || '').trim().replace(/\/+$/, '').replace(/\/chat\/completions$/, ''); }
 function serverHeaders() { const h = { 'Content-Type': 'application/json' }; if (S.serverKey) h.Authorization = 'Bearer ' + S.serverKey; return h; }
 function serverNetErr(base) { return `Impossible de joindre ${base}. Vérifiez que le serveur est lancé. Pour Ollama, définissez OLLAMA_ORIGINS=* puis redémarrez-le.`; }
 async function testServer() {
@@ -1639,7 +1579,7 @@ throw new Error('Le serveur a répondu : ' + msg);
 }
 srvOK = true;
 const ctype = res.headers.get('content-type') || '';
-if (ctype.includes('application/json')) { // serveur sans streaming
+if (ctype.includes('application/json')) {
 const j = await res.json(); const t = j.choices?.[0]?.message?.content || ''; onToken && onToken(t, t); return t;
 }
 const reader = res.body.getReader(), dec = new TextDecoder();
@@ -1649,8 +1589,7 @@ const { done, value } = await reader.read();
 if (done) break;
 buf += dec.decode(value, { stream: true });
 let i;
-while ((i = buf.indexOf('
-')) >= 0) {
+while ((i = buf.indexOf('\n\n')) >= 0) {
 const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
 if (!line.startsWith('data:')) continue;
 const data = line.slice(5).trim();
@@ -1681,36 +1620,26 @@ return full;
 }
 throw new Error('builtin');
 }
-/* --- Nettoyage du texte produit par les modèles --- /
-function stripThink(t) { return String(t || '').replace(/<think>[\s\S]?(</think>|$)/g, ''); }
+function stripThink(t) { return String(t || '').replace(/<think>[\s\S]*(<\/think>|$)/g, ''); }
 function cleanLLM(text, heading) {
-let t = stripThink(text).replace(/\r/g, '').replace(/```[a-z]*
-?|```/g, '');
-let lines = t.split('
-').map(l => l.replace(/\s+$/, ''));
-lines = lines.filter(l => !/^\s#{1,6}\s/.test(l));
-// Titre répété en première ligne ?
+let t = stripThink(text).replace(/\r/g, '').replace(/```[a-z]*\n?|```/g, '');
+let lines = t.split('\n').map(l => l.replace(/\s+$/, ''));
+lines = lines.filter(l => !/^\s*#{1,6}\s/.test(l));
 while (lines.length && !lines[0].trim()) lines.shift();
 if (lines.length) {
-const first = normTxt(lines[0].replace(/**/g, ''));
+const first = normTxt(lines[0].replace(/\*\*/g, ''));
 const h = normTxt(heading || '');
-if (/^**[^]+**:?$/.test(lines[0].trim()) || (h && first && (first === h || (first.length < h.length + 12 && first.includes(h))))) lines.shift();
+if (/^\*\*[^*]+\*\*:?$/.test(lines[0].trim()) || (h && first && (first === h || (first.length < h.length + 12 && first.includes(h))))) lines.shift();
 }
 if (lines.length && /^(voici|bien s[uû]r|certainement|d'accord)\b/i.test(lines[0].trim())) lines.shift();
-t = lines.join('
-')
-.replace(/^\s*\s+/gm, '- ')
-.replace(/^\s•\s/gm, '- ')
-.replace(/
-{3,}/g, '
-')
+t = lines.join('\n')
+.replace(/^\s*\*\s+/gm, '- ')
+.replace(/^\s*•\s/gm, '- ')
+.replace(/\n{3,}/g, '\n\n')
 .trim();
 return t;
 }
-function cleanTitleLine(s) { return String(s || '').replace(/[_#`"«»]/g, '').replace(/^\s(titre|title)\s:\s/i, '').replace(/\s+/g, ' ').trim().replace(/[.:]$/, ''); }
-/* =========================================================================
-IA — trame hors ligne (aucun modèle requis)
-========================================================================= /
+function cleanTitleLine(s) { return String(s || '').replace(/[_#`"«»]/g, '').replace(/^\s*(titre|title)\s*:\s*/i, '').replace(/\s+/g, ' ').trim().replace(/[.:]$/, ''); }
 const TPL = {
 intro: ["Ce rapport porte sur {S}. Il a pour objectif de présenter le contexte du sujet, la démarche suivie et les principaux enseignements qui en ressortent, afin d'en donner une vision claire et structurée.", "Le choix de ce sujet s'explique par son intérêt concret : il soulève des questions à la fois pratiques et techniques. [à compléter : cadre dans lequel ce rapport est rédigé, motivations]", "Après une présentation du contexte, ce document détaille les étapes du travail, les résultats obtenus, puis les perspectives envisagées."],
 contexte: ["{S} s'inscrit dans un contexte qu'il est utile de rappeler pour bien en comprendre les enjeux. [à compléter : cadre général, situation de départ, acteurs concernés]", "Plusieurs éléments expliquent l'importance de ce sujet aujourd'hui : l'évolution des besoins, les contraintes existantes et les attentes des personnes concernées. Ils constituent le point de départ de la réflexion menée dans ce rapport.", "Il convient aussi de préciser le périmètre retenu : ce rapport se concentre sur les aspects essentiels du sujet, sans prétendre à l'exhaustivité."],
@@ -1721,52 +1650,27 @@ difficultes: ["Ce travail n'a pas été exempt de difficultés. La principale a 
 competences: ["Cette expérience m'a permis de développer des compétences techniques, notamment [à compléter : outils, méthodes, logiciels].", "Sur le plan humain, j'ai appris à travailler en équipe, à rendre compte clairement de l'avancement de mon travail et à gérer mon temps face à plusieurs priorités.", "Ces acquis seront directement utiles pour la suite de mon parcours, en particulier pour [à compléter : projet professionnel, poursuite d'études]."],
 conclusion: ["En conclusion, ce travail sur {S} a permis d'atteindre l'essentiel des objectifs fixés. Il a également mis en évidence les points qui méritent d'être approfondis.", "Au-delà des résultats, cette démarche a été l'occasion d'acquérir une méthode de travail rigoureuse, réutilisable dans d'autres contextes.", "Plusieurs pistes restent ouvertes pour prolonger ce travail : [à compléter : améliorations possibles, suites envisagées]."],
 objectifs: ["L'objectif principal est de [à compléter], en lien direct avec {S}.", "Pour y parvenir, des objectifs intermédiaires ont été définis : comprendre le besoin, concevoir une solution adaptée, la mettre en œuvre puis vérifier son bon fonctionnement.", "Des critères de réussite ont été fixés dès le départ afin de pouvoir évaluer objectivement le résultat final. [à compléter : critères mesurables]"],
-cahier: ["Le cahier des charges précise les exigences à respecter : [à compléter : contraintes fonctionnelles, techniques, budget, délais].", "Les contraintes principales concernent [à compléter]. Elles ont orienté les choix effectués lors de la conception.", "Le tableau des exigences peut être résumé ainsi :
-Exigence 1 : [à compléter]
-Exigence 2 : [à compléter]
-Exigence 3 : [à compléter]"],
+cahier: ["Le cahier des charges précise les exigences à respecter : [à compléter : contraintes fonctionnelles, techniques, budget, délais].", "Les contraintes principales concernent [à compléter]. Elles ont orienté les choix effectués lors de la conception.", "Le tableau des exigences peut être résumé ainsi :\nExigence 1 : [à compléter]\nExigence 2 : [à compléter]\nExigence 3 : [à compléter]"],
 methode: ["La démarche adoptée repose sur une approche progressive : étude du principe, choix d'une méthode, puis vérification par l'expérience.", "Le principe utilisé est le suivant : [à compléter : principe théorique, schéma, formule]. Il permet de répondre au besoin de façon simple et vérifiable.", "Le matériel et les outils employés sont : [à compléter : matériel, logiciels, instruments de mesure]."],
 methodo: ["L'étude repose sur une méthodologie en plusieurs étapes : collecte d'informations, analyse, puis synthèse.", "Les sources utilisées sont : [à compléter : documents, entretiens, données, observations].", "Cette approche permet de croiser plusieurs points de vue et de limiter les biais d'interprétation."],
-miseoeuvre: ["La mise en œuvre a commencé par la préparation du matériel et la vérification des conditions de travail. [à compléter : montage, configuration, programme]", "Chaque étape a été validée avant de passer à la suivante, ce qui a permis d'identifier rapidement l'origine des éventuels problèmes.", "Les réglages réalisés et les paramètres retenus sont résumés ci-dessous :
-Paramètre 1 : [valeur]
-Paramètre 2 : [valeur]
-Paramètre 3 : [valeur]"],
-resultats: ["Les résultats obtenus sont présentés dans cette partie. [à compléter : mesures, tableaux, courbes, captures]", "Dans l'ensemble, ils sont cohérents avec ce qui était attendu. Les écarts observés restent limités et s'expliquent principalement par [à compléter].", "Les principaux résultats peuvent être résumés ainsi :
-[résultat 1]
-[résultat 2]
-[résultat 3]"],
+miseoeuvre: ["La mise en œuvre a commencé par la préparation du matériel et la vérification des conditions de travail. [à compléter : montage, configuration, programme]", "Chaque étape a été validée avant de passer à la suivante, ce qui a permis d'identifier rapidement l'origine des éventuels problèmes.", "Les réglages réalisés et les paramètres retenus sont résumés ci-dessous :\nParamètre 1 : [valeur]\nParamètre 2 : [valeur]\nParamètre 3 : [valeur]"],
+resultats: ["Les résultats obtenus sont présentés dans cette partie. [à compléter : mesures, tableaux, courbes, captures]", "Dans l'ensemble, ils sont cohérents avec ce qui était attendu. Les écarts observés restent limités et s'expliquent principalement par [à compléter].", "Les principaux résultats peuvent être résumés ainsi :\n[résultat 1]\n[résultat 2]\n[résultat 3]"],
 analyse: ["L'analyse permet de tirer plusieurs enseignements. Tout d'abord, [à compléter : constat principal].", "Il est utile de comparer ces éléments aux valeurs théoriques ou aux objectifs de départ. Cette comparaison montre que [à compléter].", "Certaines limites doivent toutefois être soulignées : précision des données, conditions de test ou temps disponible. Elles invitent à interpréter ces résultats avec prudence."],
 perspectives: ["Plusieurs améliorations peuvent être envisagées pour aller plus loin : [à compléter].", "À plus long terme, ce travail pourrait être étendu à d'autres usages ou faire l'objet d'une étude plus approfondie.", "Ces perspectives montrent que le travail réalisé constitue une base solide sur laquelle il sera possible de s'appuyer."],
 organisation: ["Le projet a été organisé en plusieurs phases : analyse, conception, réalisation, tests et bilan. Un planning prévisionnel a été établi dès le début. [à compléter : durée de chaque phase]", "La répartition des tâches s'est faite selon les compétences de chacun : [à compléter : rôles]. Des réunions régulières ont permis de suivre l'avancement et d'ajuster le planning.", "Les outils de suivi utilisés (planning, tableau de tâches, partage de documents) ont facilité la coordination."],
 besoin: ["Le projet répond à un besoin identifié : [à compléter : problème à résoudre, utilisateurs concernés].", "Les solutions existantes ne répondaient pas entièrement à ce besoin, ce qui justifie la démarche engagée autour de {S}.", "Ce besoin a été formalisé avec les personnes concernées afin de s'assurer que le projet réponde à leurs attentes réelles."],
 bilan: ["Le bilan du projet est globalement positif : les objectifs principaux ont été atteints [à compléter : préciser lesquels].", "Certains points restent perfectibles, notamment [à compléter]. Ils constituent des axes d'amélioration pour une prochaine version.", "Ce projet a aussi été une expérience enrichissante sur le plan de l'organisation et du travail collectif."],
 etat: ["L'état des lieux permet de dresser un portrait de la situation actuelle. [à compléter : chiffres clés, situation observée]", "Les points forts identifiés sont [à compléter], tandis que les principaux points faibles concernent [à compléter].", "Ce diagnostic sert de base aux analyses et aux recommandations présentées dans la suite du rapport."],
-recommandations: ["Au regard de l'analyse, plusieurs recommandations peuvent être formulées :
-[recommandation 1]
-[recommandation 2]
-[recommandation 3]", "Ces recommandations sont classées par ordre de priorité, en tenant compte de leur impact attendu et de leur facilité de mise en œuvre.", "Leur mise en place nécessitera [à compléter : moyens, délais, responsables], ainsi qu'un suivi régulier pour en mesurer les effets."],
+recommandations: ["Au regard de l'analyse, plusieurs recommandations peuvent être formulées :\n[recommandation 1]\n[recommandation 2]\n[recommandation 3]", "Ces recommandations sont classées par ordre de priorité, en tenant compte de leur impact attendu et de leur facilité de mise en œuvre.", "Leur mise en place nécessitera [à compléter : moyens, délais, responsables], ainsi qu'un suivi régulier pour en mesurer les effets."],
 objet: ["Cette réunion avait pour objet {S}. [à compléter : date, lieu, durée]", "Elle visait à faire le point sur l'avancement et à prendre les décisions nécessaires pour la suite."],
-participants: ["- [Nom], [fonction]
-[Nom], [fonction]
-[Nom], [fonction]
-Excusés : [à compléter]"],
-points: ["Les points suivants ont été abordés :
-[Point 1]
-[Point 2]
-[Point 3]", "Pour chaque point, les échanges ont permis de [à compléter : résumé des discussions]."],
-decisions: ["Les décisions suivantes ont été prises :
-[décision 1]
-[décision 2]", "Ces décisions s'appliquent à compter du [date]."],
-actions: ["- [Action] — responsable : [nom] — échéance : [date]
-[Action] — responsable : [nom] — échéance : [date]
-[Action] — responsable : [nom] — échéance : [date]"],
+participants: ["- [Nom], [fonction]\n[Nom], [fonction]\n[Nom], [fonction]\nExcusés : [à compléter]"],
+points: ["Les points suivants ont été abordés :\n[Point 1]\n[Point 2]\n[Point 3]", "Pour chaque point, les échanges ont permis de [à compléter : résumé des discussions]."],
+decisions: ["Les décisions suivantes ont été prises :\n[décision 1]\n[décision 2]", "Ces décisions s'appliquent à compter du [date]."],
+actions: ["- [Action] — responsable : [nom] — échéance : [date]\n[Action] — responsable : [nom] — échéance : [date]\n[Action] — responsable : [nom] — échéance : [date]"],
 prochaine: ["La prochaine réunion est prévue le [date] à [heure], à [lieu]. Ordre du jour provisoire : [à compléter]."],
 enjeux: ["Ce sujet présente plusieurs enjeux importants : économiques, techniques et humains. [à compléter]", "Bien identifier ces enjeux permet de mesurer l'intérêt du sujet et de hiérarchiser les priorités.", "Ils doivent aussi être mis en regard des risques et des contraintes, afin de proposer une vision équilibrée."],
 developpement: ["Le cœur du sujet peut être abordé sous plusieurs angles. Le premier concerne [à compléter].", "Un second aspect, tout aussi important, porte sur [à compléter]. Il complète le précédent et apporte un éclairage différent.", "La mise en relation de ces différents aspects permet de mieux comprendre la complexité de {S}."],
-indicateurs: ["Les indicateurs clés retenus sont les suivants :
-[Indicateur 1] : [valeur à compléter]
-[Indicateur 2] : [valeur à compléter]
-[Indicateur 3] : [valeur à compléter]", "Ces chiffres doivent être vérifiés et mis à jour avant toute diffusion du rapport."]
+indicateurs: ["Les indicateurs clés retenus sont les suivants :\n[Indicateur 1] : [valeur à compléter]\n[Indicateur 2] : [valeur à compléter]\n[Indicateur 3] : [valeur à compléter]", "Ces chiffres doivent être vérifiés et mis à jour avant toute diffusion du rapport."]
 };
 const DOC_TYPES = {
 stage: { label: 'rapport de stage', sub: 'Rapport de stage', plan: [['Introduction', 'intro'], ["Présentation de l'entreprise", 'entreprise'], ['Missions confiées', 'missions'], ['Travail réalisé', 'realisation'], ['Difficultés rencontrées et solutions', 'difficultes'], ['Compétences acquises', 'competences'], ['Conclusion', 'conclusion']] },
@@ -1803,8 +1707,7 @@ function paraCount(len) { return len === 'court' ? 1 : len === 'long' ? 3 : 2; }
 function fillTpl(key, topic, n) {
 const arr = TPL[key] || TPL.developpement;
 const S = `« ${topic} »`;
-return arr.slice(0, Math.min(n, arr.length)).map(p => p.replace(/{S}/g, S)).join('
-');
+return arr.slice(0, Math.min(n, arr.length)).map(p => p.replace(/{S}/g, S)).join('\n');
 }
 function keyForHeading(h) {
 const t = normTxt(h);
@@ -1822,9 +1725,6 @@ subtitle: DOC_TYPES[type].sub,
 sections: plan.map(([h, k]) => ({ heading: h, text: fillTpl(k, topic, n) }))
 };
 }
-/* =========================================================================
-IA — génération d'un rapport complet
-========================================================================= /
 function startJob(label) {
 app.ai.busy = true; app.ai.stopped = false; app.ai.abort = new AbortController();
 $('#ai-chip').hidden = false; setJob(label);
@@ -1876,14 +1776,13 @@ function parsePlan(text) {
 const t = stripThink(text);
 let title = '', subtitle = '';
 const parts = [];
-for (const raw of t.split('
-')) {
+for (const raw of t.split('\n')) {
 const line = raw.trim(); let m;
 if (!line) continue;
-if ((m = line.match(/^*\ssous[- ]titre\s*\s:\s(.+)$/i))) { subtitle = cleanTitleLine(m[1]); continue; }
-if ((m = line.match(/^*\stitre\s*\s:\s(.+)$/i))) { title = cleanTitleLine(m[1]); continue; }
-if ((m = line.match(/^(?:**)?(?:partie\s+)?(\d{1,2})\s[.)-:]\s(.+)$/i))) {
-const h = cleanTitleLine(m[2]).replace(/\s[-–:]\s.$/, '').trim();
+if ((m = line.match(/^\*?\s*sous[- ]titre\s*\*?\s*:\s*(.+)$/i))) { subtitle = cleanTitleLine(m[1]); continue; }
+if ((m = line.match(/^\*?\s*titre\s*\*?\s*:\s*(.+)$/i))) { title = cleanTitleLine(m[1]); continue; }
+if ((m = line.match(/^(?:\*\*)?(?:partie\s+)?(\d{1,2})\s*[.)\-:]\s*(.+)$/i))) {
+const h = cleanTitleLine(m[2]).replace(/\s[-–:]\s.*$/, '').trim();
 if (h && h.length < 110) parts.push(h);
 }
 }
@@ -1918,29 +1817,26 @@ await sleep(70);
 }
 liveStep(1, 'done');
 touch({ title: true }); persist();
-toast('Trame générée : complétez les zones [à compléter]. Pour un texte entièrement rédigé, activez l'IA du navigateur ou un serveur local.', 'ok', { timeout: 7000 });
+toast("Trame générée : complétez les zones [à compléter]. Pour un texte entièrement rédigé, activez l'IA du navigateur ou un serveur local.", 'ok', { timeout: 7000 });
 return;
 }
-// 1. Moteur
 liveStep(0, 'run'); setJob(engine === 'webllm' ? 'Chargement du modèle…' : 'Connexion…');
 if (engine === 'webllm') {
 await ensureWebLLM(rep => { setJob(`Modèle : ${Math.round((rep.progress || 0) * 100)} %`); liveText(rep.text || ''); });
 }
 liveStep(0, 'done'); stepIdx = 1;
-// 2. Plan
 liveStep(1, 'run'); setJob('Plan du rapport…');
 const nParts = f.parts || (type === 'reunion' ? 5 : 6);
 const planPrompt = `Sujet : ${f.topic}
 Type de document : ${dt.label}
 Ton : ${TONES[f.tone]}
-Nombre de parties : ${nParts}${f.instr ? `
-Consignes : ${f.instr}` : ''}
+Nombre de parties : ${nParts}${f.instr ? `\nConsignes : ${f.instr}` : ''}
 Propose un titre précis, un sous-titre court et le plan du document en ${nParts} parties (titres courts, sans sous-parties).
 Réponds EXACTEMENT dans ce format, sans aucun autre texte :
 TITRE: ...
 SOUS-TITRE: ...
-...
-...`;
+1. ...
+2. ...`;
 const planRaw = await llm([{ role: 'system', content: SYS }, { role: 'user', content: planPrompt }], { maxTokens: 320, temperature: 0.6, onToken: (d, full) => liveText(full) });
 if (app.ai.stopped) throw new DOMException('stop', 'AbortError');
 const plan = parsePlan(planRaw);
@@ -1948,12 +1844,10 @@ let headings = plan.parts.slice(0, 10);
 if (headings.length < 2) headings = pickPlan(type, nParts).map(p => p[0]);
 if (isNew) { r.title = plan.title || capFirst(f.topic); r.subject = plan.subtitle || dt.sub; }
 liveStep(1, 'done');
-// 3. Parties
 renderEditor(); navigate('editor');
 if (window.innerWidth <= 860) setTab('preview');
 const k = paraCount(f.length);
-const planList = headings.map((h, i) => `${i + 1}. ${h}`).join('
-');
+const planList = headings.map((h, i) => `${i + 1}. ${h}`).join('\n');
 for (let i = 0; i < headings.length; i++) {
 if (app.ai.stopped) break;
 const h = headings[i];
@@ -1969,8 +1863,7 @@ const isConcl = /conclu|bilan|perspective/i.test(h);
 const prompt = `Document : « ${r.title || f.topic} » (${dt.label}, sujet : ${f.topic}).
 Ton : ${TONES[f.tone]}.
 Plan complet :
-${planList}${f.instr ? `
-Consignes de l'auteur : ${f.instr}` : ''}
+${planList}${f.instr ? `\nConsignes de l'auteur : ${f.instr}` : ''}
 Rédige maintenant uniquement le contenu de la partie ${i + 1} « ${h} ».
 Écris ${k} paragraphe${k > 1 ? 's' : ''} de 4 à 6 phrases, en texte simple. Tu peux ajouter une courte liste à puces (lignes commençant par "- ") si c'est vraiment utile.
 N'écris pas le titre de la partie. Ne commence pas par « Voici ».${isConcl ? '' : ' Ne fais pas de conclusion générale du rapport.'} Si une information précise manque, écris [à compléter].`;
@@ -1988,7 +1881,6 @@ app.streamingId = null;
 liveStep(li, 'done');
 touch();
 }
-// nettoyage d'un éventuel paragraphe vide (arrêt en cours)
 const last = r.sections[r.sections.length - 1];
 if (last && last.type === 'p' && !last.text.trim()) r.sections.pop();
 touch({ title: true }); persist();
@@ -2011,15 +1903,11 @@ endJob();
 if (isEmptyReport(app.report)) renderEditor();
 }
 }
-/* =========================================================================
-IA — actions sur un bloc
-========================================================================= /
 function contextFor(id) {
 const secs = app.report.sections, i = secIndex(id);
 let heading = '';
 for (let j = i; j >= 0; j--) if (secs[j].type === 'h1' || secs[j].type === 'h2') { heading = secs[j].text; break; }
-const before = secs.slice(Math.max(0, i - 3), i).filter(s => s.type === 'p' && s.text.trim()).map(s => s.text.trim()).join('
-').slice(-1200);
+const before = secs.slice(Math.max(0, i - 3), i).filter(s => s.type === 'p' && s.text.trim()).map(s => s.text.trim()).join('\n').slice(-1200);
 return { heading, before };
 }
 function openSectionAIMenu(btn, id) {
@@ -2048,7 +1936,6 @@ const engine = currentEngine();
 const ctx = contextFor(id);
 const docTitle = app.report.title || 'rapport';
 const topic = app.report.title || app.report.subject || ctx.heading || 'le sujet';
-// Moteur hors ligne : seules les actions de rédaction à partir d'un titre sont possibles
 if (engine === 'builtin') {
 if (action === 'write' || action === 'writeUnder') {
 const h = action === 'writeUnder' ? s.text : ctx.heading;
@@ -2057,7 +1944,7 @@ if (action === 'write') { const prev = s.text; setSectionText(id, text); renderS
 else { const p = addSection('p', id); setSectionText(p.id, text); renderSections(); touch(); }
 return;
 }
-toast('Cette action demande un vrai modèle d'IA (navigateur ou serveur local).', 'warn', { action: { label: 'Configurer', fn: () => navigate('ai') } });
+toast("Cette action demande un vrai modèle d'IA (navigateur ou serveur local).", 'warn', { action: { label: 'Configurer', fn: () => navigate('ai') } });
 return;
 }
 let target = s, prev = s.text, prompt = '', maxTokens = 600, mode = 'replace', temperature;
@@ -2065,9 +1952,7 @@ const h = ctx.heading;
 switch (action) {
 case 'write':
 prompt = `Rapport : « ${docTitle} ».
-Rédige le contenu de la partie « ${h || topic} » en 2 paragraphes de 4 à 5 phrases, en texte simple, sans titre.${ctx.before ? `
-Texte qui précède, pour garder la cohérence :
-${ctx.before}` : ''}
+Rédige le contenu de la partie « ${h || topic} » en 2 paragraphes de 4 à 5 phrases, en texte simple, sans titre.${ctx.before ? `\nTexte qui précède, pour garder la cohérence :\n${ctx.before}` : ''}
 Si une information précise manque, écris [à compléter].`; break;
 case 'writeUnder': {
 target = addSection('p', id); prev = '';
@@ -2109,8 +1994,7 @@ const raw = await llm([{ role: 'system', content: SYS }, { role: 'user', content
 maxTokens, temperature,
 onToken: (d, full) => { if (target.type === 'h1' || target.type === 'h2') return; setSectionText(target.id, base + stripThink(full)); }
 });
-let out = action === 'retitle' ? cleanTitleLine(stripThink(raw).split('
-').find(l => l.trim()) || '') : cleanLLM(raw, action === 'writeUnder' ? s.text : h);
+let out = action === 'retitle' ? cleanTitleLine(stripThink(raw).split('\n').find(l => l.trim()) || '') : cleanLLM(raw, action === 'writeUnder' ? s.text : h);
 if (!out) throw new Error("Le modèle n'a rien renvoyé. Réessayez.");
 setSectionText(target.id, base + out);
 touch();
@@ -2125,11 +2009,8 @@ endJob(); renderSections(); touch();
 }
 }
 function undoToast(id, prev) {
-toast('Texte mis à jour par l'IA.', 'ok', { action: { label: 'Annuler', fn: () => { if (setSectionText(id, prev)) { renderSections(); touch(); } } } });
+toast("Texte mis à jour par l'IA.", 'ok', { action: { label: 'Annuler', fn: () => { if (setSectionText(id, prev)) { renderSections(); touch(); } } } });
 }
-/* =========================================================================
-IA — interface de la page Chati IA
-========================================================================= /
 function renderAIEngines() {
 const e = currentEngine();
 $$('.eng').forEach(el => el.classList.toggle('on', el.dataset.eng === e));
@@ -2167,9 +2048,6 @@ seg('#ai-length', 'aiLength'); seg('#ai-target', 'aiTarget');
 $$('#ai-length button').forEach(x => x.classList.toggle('on', x.dataset.v === app.ui.aiLength));
 $$('#ai-target button').forEach(x => x.classList.toggle('on', x.dataset.v === app.ui.aiTarget));
 }
-/* =========================================================================
-INITIALISATION
-========================================================================= /
 function migrateOld() {
 if (store.get(K.migrated, false)) return;
 const old = store.get('reports_v2', []);
@@ -2189,13 +2067,12 @@ const last = store.get(K.last, null);
 const found = app.history.find(h => h.id === last);
 app.report = found ? normalizeReport(clone(found)) : newReport();
 for (const [id, closed] of Object.entries(app.ui.closed || {})) if (closed) $('#' + id)?.classList.add('closed');
-// Navigation & barre du haut
 $$('.nav-item').forEach(b => b.onclick = () => navigate(b.dataset.nav));
 $('#menu-btn').onclick = openSidebar;
 $('#overlay').onclick = closeSidebar;
 $$('.mob-tabs button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 $('#btn-new').onclick = newDoc;
-$('#btn-save').onclick = () => { if (isEmptyReport(app.report)) return toast('Rien à enregistrer pour le moment.', 'info'); if (persist()) toast('Rapport enregistré dans l'historique.', 'ok'); };
+$('#btn-save').onclick = () => { if (isEmptyReport(app.report)) return toast('Rien à enregistrer pour le moment.', 'info'); if (persist()) toast("Rapport enregistré dans l'historique.", 'ok'); };
 $('#btn-export').onclick = e => openExportMenu(e.currentTarget);
 $('#ai-stop').onclick = stopJob;
 $('#zoom-in').onclick = () => stepZoom(0.1);
@@ -2204,14 +2081,12 @@ $('#zoom-fit').onclick = fitZoom;
 new ResizeObserver(() => { if (app.zoom === 'fit') applyZoom(); }).observe($('#stage'));
 let lastW = window.innerWidth;
 window.addEventListener('resize', () => { const w = window.innerWidth; if ((lastW <= 860) !== (w <= 860)) { renderPreview(); autosizeAll(); } lastW = w; });
-// Raccourcis clavier
 document.addEventListener('keydown', e => {
 const mod = e.ctrlKey || e.metaKey;
 if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); $('#btn-save').click(); }
 else if (mod && e.key.toLowerCase() === 'p') { e.preventDefault(); printDoc(); }
 else if (e.key === 'Escape') { closePop(); closeSidebar(); }
 });
-// Impression lancée depuis le menu du navigateur
 window.addEventListener('beforeprint', () => { const root = $('#print-root'); if (!root.innerHTML.trim()) root.innerHTML = buildDoc(app.report, 'print'); });
 window.addEventListener('afterprint', () => { $('#print-root').innerHTML = ''; });
 window.addEventListener('beforeunload', () => { if (saveTimer) persist(); });
